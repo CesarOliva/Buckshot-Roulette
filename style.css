@@ -1,0 +1,191 @@
+/*Estilos generales*/
+*{
+    padding: 0;
+    margin: 0;
+}
+body{
+    background: url("images/background.png");
+    background-color: rgb(81, 29, 29);
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+/*Estilos del formulario de inicio*/
+.inicio{
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    width: 300px;
+}
+.inicio h2{
+    font-family: "IM Fell English SC";
+    font-weight: 800;
+    font-size: 50px;
+    color: white;
+    letter-spacing: 2px;
+}
+.inicio h2.up{
+    font-stretch: condensed;
+    transform: scaleY(1.5);
+}
+.inicio h4{
+    font-family: "Doto", sans-serif;
+    font-weight: normal;
+    font-size: 45px;
+    color: white;
+}
+.inicio form{
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+.inicio form input{
+    margin: 10px 0;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: none;
+    font-family: "IM Fell English SC";
+    font-weight: normal;
+    font-size: 18px;
+
+}
+.inicio form input:focus{
+    outline: none;
+    border: none;
+}
+.inicio form input.error{
+    color: red;
+}
+.inicio form input.error::placeholder{
+    color: red;
+}
+.inicio form .botones{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 10px;
+}
+.inicio form .botones button{
+    padding: 5px 10px;
+    font-family: "Doto", sans-serif;
+    font-size: 16px;
+    color: white;
+    border: 1px dotted white;
+    border-radius: 10px;
+    background: transparent;
+    margin: 0 10px;
+}
+
+#game {
+    margin: 0 auto;
+    padding: 2rem;
+    max-width: 600px;
+}
+
+#status {
+    text-wrap: balance;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    margin-block: 1rem;
+    border-radius: 6px;
+    background-color: rgba(255, 255, 255, 0.10);
+    padding-inline: 2rem;
+    width: fit-content;
+    height: 4rem;
+    font-weight: bold;
+}
+
+#shotgun-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    height: 20rem;
+
+}
+
+#shotgun {
+    rotate: -15deg;
+    transition: scale .2s, rotate .4s;
+    width: 256px;
+}
+
+#shotgun[data-aim="1"] {
+    rotate: 90deg;
+}
+
+#shotgun[data-aim="2"] {
+    rotate: -90deg;
+}
+
+#shotgun-wrapper:hover #shotgun {
+    scale: 1.1;
+}
+
+#bullet_display {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 5px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 8px;
+    z-index: 1000;
+}
+
+.bullet {
+    width: 20px;
+    height: 40px;
+    background-color: red;
+    border-radius: 3px;
+}
+
+.bullet.blank{
+    background-color: gray ;
+}
+
+.action-button {
+    display: block;
+    transition: scale .2s;
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    padding: 1rem;
+    width: 100%;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.action-button:hover {
+    scale: 1.1;
+}
+
+.player {
+    margin: 0 auto;
+    border-radius: 6px;
+    padding: .5rem 1rem;
+    width: fit-content;
+}
+
+.player-health-box{
+    position: fixes;
+    bottom: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-end;
+    z-index: 999;
+}
+
+.player.active {
+    background-color: rgba(255, 255, 255, 0.10);
+}
