@@ -1,14 +1,15 @@
 //Obtiene los elementos con el DOM de Javascript
-const inicio = document.getElementById("inicio");
-const usuario = document.getElementById("usuario");
-const contraseña = document.getElementById("password");
-const jugar = document.getElementById('jugar');
-const registro = document.getElementById('registro');
+const divInicio = document.getElementById("inicio");
+const divJuego = document.getElementById("juego");
 
-const juego = document.getElementById("juego");
+const inputUsuario = document.getElementById("usuario");
+const inputContraseña = document.getElementById("password");
+
+const btnJugar = document.getElementById('jugar');
+const btnRegistro = document.getElementById('registro');
 
 //Al clickear en el elemento de registro
-registro.addEventListener('click', function(e){
+btnRegistro.addEventListener('click', function(e){
     validarRegistro();
     e.preventDefault();
 });
@@ -17,21 +18,21 @@ registro.addEventListener('click', function(e){
 function validarRegistro(){
     var correcto = true;
     //Si el elemento está vacio o tiene espacios
-    if(usuario.value=='' || usuario.value.includes(" ")){
+    if(inputUsuario.value=='' || inputUsuario.value.includes(" ")){
         //Marca error en el elemento
-        usuario.setAttribute('class', 'error');
-        usuario.addEventListener('click', function(e){
-            usuario.setAttribute('class', "")
+        inputUsuario.setAttribute('class', 'error');
+        inputUsuario.addEventListener('click', function(e){
+            inputUsuario.setAttribute('class', "")
         });
         correcto = false;
     };
     
     //Si el elemento está vacio
-    if(contraseña.value==''){
+    if(inputContraseña.value==''){
         //Marca error en el elemento
-        contraseña.setAttribute('class', 'error');
-        contraseña.addEventListener('click', function(e){
-            contraseña.setAttribute('class', "")
+        inputContraseña.setAttribute('class', 'error');
+        inputContraseña.addEventListener('click', function(e){
+            inputContraseña.setAttribute('class', "")
         });
         correcto = false;
     };
@@ -43,15 +44,14 @@ function validarRegistro(){
 }
 
 //Al clickear en el elemento de jugar
-jugar.addEventListener('click', function(e){
-    inicio.remove();
-    juego.style.display = "block"
+btnJugar.addEventListener('click', function(e){
+    divInicio.remove();
+    divJuego.style.display = "block"
 })
 
 //Valida los datos para iniciar el jeugo
 function validarInicio(){
     //Si existe el usuario y coincide la contraseña
-    usuario.parentElement();
 }
 
 //Inicia el juego
@@ -64,10 +64,18 @@ function iniciarJuego(){
 
 let player1Health;
 let player2Health;
+let player1Items = [];
+let player2Items = [];
+let player1 = {hasKnife: false};
+let player2 = {hasKnife: false};
 let turn;
 let blankShells;
 let liveShells;
 let chamber;
+let cigarette;
+let beer;
+let knife;
+let lens;
 
 const statusElement = document.getElementById("status");
 const player1HealthElement = document.getElementById("player-1-health");
@@ -123,10 +131,10 @@ function bulletTemporal(){
 
     bulletDisplay.style.display = 'flex';
 
-    //OCULTAR DESPUES DE TRES SEGUNDOS
+    //OCULTAR DESPUES DE CINCO SEGUNDOS
     setTimeout(() => {
         bulletDisplay.style.display = 'none';
-    }, 3000 ); //MILISEGUNDOS
+    }, 5000 );
 
     alert('El oponente esta revolviendo el cartucho');
 
@@ -137,43 +145,52 @@ function shoot(player) {
     const shell = chamber.pop();
     if (shell === 'live') {
 
-        if (turn == 1) {
-            if (player === "opponent") {
-                shotgun.dataset.aim = "2";
-                setTimeout(() => {
-                    alert("Se disparo una bala real!");
-                    damage("player2", 1);
-                }, 1000);
+    let damageAmount = 1;
 
-            } else if (player === "self") {
-                shotgun.dataset.aim = "1";
-                setTimeout(() => {
-                    alert("Se disparo una bala real!");
-                    damage("player1", 1);
-                }, 1000);
+    // Verifica si hay cuchillo activo para aplicar daño doble
+    if (turn === 1 && player1.hasKnife) {
+        damageAmount = 2;
+        player1.hasKnife = false;
+    }
 
-            }
+    if (turn === 2 && player2.hasKnife) {
+        damageAmount = 2;
+        player2.hasKnife = false;
+    }
+
+    if (turn === 1) {
+        if (player === "opponent") {
+            shotgun.dataset.aim = "2";
+            setTimeout(() => {
+                alert("¡Se disparó una bala real!");
+                damage("player2", damageAmount);
+            }, 1000);
+
+        } else if (player === "self") {
+            shotgun.dataset.aim = "1";
+            setTimeout(() => {
+                alert("¡Se disparó una bala real!");
+                damage("player1", damageAmount);
+            }, 1000);
         }
+    }
 
-        if (turn == 2) {
-            if (player === "opponent") {
-                shotgun.dataset.aim = "1";
-                setTimeout(() => {
-                    alert("Se disparo una bala real!");
-                    damage("player1", 1);
-                }, 1000);
+    if (turn === 2) {
+        if (player === "opponent") {
+            shotgun.dataset.aim = "1";
+            setTimeout(() => {
+                alert("¡Se disparó una bala real!");
+                damage("player1", damageAmount);
+            }, 1000);
 
-            } else if (player === "self") {
-                shotgun.dataset.aim = "2";
-                setTimeout(() => {
-                    alert("Se disparo una bala real!");
-                    damage("player2", 1);
-                }, 1000);
-
-            }
+        } else if (player === "self") {
+            shotgun.dataset.aim = "2";
+            setTimeout(() => {
+                alert("¡Se disparó una bala real!");
+                damage("player2", damageAmount);
+            }, 1000);
         }
-
-
+    }
     } else {
 
         if (turn == 1) {
@@ -216,6 +233,119 @@ function shoot(player) {
     nextTurn();
 }
 
+const ITEMS = {
+    cigarette : {
+        name : "Cigarro",
+        description: "Recupera 1 punto de vida",
+        use : (player) => {
+            if (player1 === 'player1' && player1Health < 3) player1Health ++;
+            if(player2 === 'player2' && player2Health < 3) player2Health++;
+            renderHealth();
+        }
+    },
+
+    beer : {
+        name : "Cerveza",
+        description: "Reduce la cantidad de balas",
+        use : (player) => {
+            if(chamber.length > 0){
+                chamber = chamber.filter(b => b !== 'live');
+                chamber.push('blank');
+            }
+        } 
+    },
+
+    lens : {
+        name : "Lupa",
+        description: "Muestra la siguiente bala",
+        use : (player) => {
+            if(chamber.length > 0){
+                alert('La siguiente bala es: ${chamber[chamber.length -1]}');
+            }
+        }
+    },
+
+    knife : {
+        name : "Cuchillo",
+        description: "Porvoca doble daño",
+        uso : (player) => {
+            player.hasKnife = true;
+        } 
+    }
+}
+
+function randomItems(){
+    const keys = Object.keys(ITEMS);
+    const numItems = Math.floor(Math.random()*3)+2;
+    const shuffled = keys.sort(() => .5 -Math.random());
+    return shuffled.slice(0,numItems);
+}
+
+
+function renderItems(){
+    const container = document.getElementById("items-list");
+    container.innerHTML = ''; // Limpia ítems anteriores
+
+    player1Items.forEach((item, index) => {
+        const btn = document.createElement("button");
+        btn.innerText = item;
+        btn.classList.add("item-button");
+        btn.onclick = () => useItem(item, index);
+        container.appendChild(btn);
+    });
+    /*const container = document.getElementById("player-items");
+    container.innerHTML = "";
+
+    player1Items.forEach((key,index) => {
+        const item = ITEMS[keys];
+        const btn = document.createElement("button");
+        btn.innerText = inter.name;
+        btn.title = item.description;
+        btn.onclick = () => {
+            item.use('player1');
+            player1Items.splice(index,1);
+            renderItems();
+        };
+        container.appendChild(btn);
+    });*/
+}
+
+function userItems(player, item,index){
+    if(payer === "player1"){
+        switch(item){
+            case "Cigarro":
+                if(player1Health < 3){
+                    player1Health++;
+                    alert("Cigarro, +1 vida");
+                    renderHealth();
+                } else {
+                    alert("Ya tienes la vida completa");
+                    return;
+                }
+                break;
+
+            case "Cerveza":
+                if (chamber.length > 0) {
+                const removed = chamber.pop();
+                    alert(`Descargaste una bala : ${removed === 'live' ? 'Real' : 'Falsa'}`);
+                } else {
+                alert("No hay balas para quitar");
+            }
+                break;
+
+            case "Lupa":
+                alert("La siguiente bala es: "+chamber[chamber.length - 1]==='live' ? 'Real' : 'Falsa');
+                break;
+                
+            case "Cuchillo":
+                player1.hasKnife = true;
+                alert("El sigueinte disparo hara el doble de daño");
+                break;    
+        }
+        player1Items.splice(index, 1);
+        renderItems();
+    }
+}
 
 function renderHealth() {
     if (player1Health <= 0) {
@@ -244,6 +374,37 @@ function nextTurn() {
             turn = 1;
         }
         renderTurn();
+
+        if (turn === 2){
+           // setTimeout(()=> {
+              //  if(player2Items.length > 0 && Math.random()< .5){
+                   // const key =player2Items.pop();
+                 //   ITEMS[key].use('player2');
+               // }
+         //   });
+
+            setTimeout(() => {
+                
+                if(player2Items.length > 0 && Math.random()< .5){
+                    const key =player2Items.pop();
+                    ITEMS[key].use('player2');
+                 }
+                const liveCount = chamber.filter(b => b === 'live').length;
+                const totalLeft = chamber.length;
+
+                const probaLive = liveCount / totalLeft;
+
+                let decision;
+                if (probaLive > 0.5 || player1Health === 1){
+                    decision = 'opponent';
+                } else{
+                    decision = 'self';
+                }
+
+                shoot(decision);
+                
+            }, 1000);
+        }
     }, 1000);
 }
 
@@ -262,8 +423,11 @@ function reload() {
 
     //generateRandomChamber()
     const totalShells = 6;
+
+    do{
     liveShells = Math.floor(Math.random() * 5) + 2;
     blankShells = totalShells - liveShells;
+    }while(liveShells === 0 || blankShells === 0);
 
     alert(`${liveShells} live & ${blankShells} blank shells`);
     chamber = Array(blankShells).fill('blank').concat(Array(liveShells).fill('live'));
@@ -278,20 +442,26 @@ function startGame() {
 
     totalShells = 6;
 
+    do{
     liveShells = Math.floor(Math.random() * 5) + 2;
     blankShells = totalShells - liveShells;
+    }while(liveShells === 0 || blankShells === 0);
 
     chamber = Array(blankShells).fill('blank').concat(Array(liveShells).fill('live'));
     shuffleArray(chamber);
 
     bulletTemporal();
 
-
     player1Health = 3;
     player2Health = 3;
 
+    player1Items = getRandomItems();
+    player2Items = getRandomItems();
+
     //generateRandomChamber();
     renderHealth();
+    renderItems();
+
 
     turn = Math.floor(Math.random() * 2) + 1;
     renderTurn();

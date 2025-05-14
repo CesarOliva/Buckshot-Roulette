@@ -25,29 +25,25 @@
             </div>
         </form>
     </div>
-    
+
     <div class="juego" id="juego" style="display: none;">
-        <div id="game">
+        <div id="game" class="gunMain">
             <div @mouseover="open = true" @mouseover.outside="open = false" x-data="{ open: false }" id="shotgun-wrapper">
-                <button class="action-button" x-show="open" x-transition onclick="shoot('opponent')" id="shoot-opponent">OPPONENT</button>
+                <button class="action-button" x-show="open" x-transition onclick="shoot('opponent')" id="shoot-opponent">OPONENTE</button>
                 <img :style="{ scale: open ? 1.1 : '' }" id="shotgun" src="images/shotgun.png" alt="A picture of a shotgun">
-                <button class="action-button" x-show="open" x-transition onclick="shoot('self')"id="shoot-self">YOU</button>
+                <button class="action-button" x-show="open" x-transition onclick="shoot('self')"id="shoot-self">USUARIO</button>
             </div>
         </div>
         
-        <div id="player-health-box">
-            <div id="player-2" class="player">Player 2: <span id="player-2-health"></span></div>
-            <div id="player-1" class="player">Player 1: <span id="player-1-health"></span></div>
+        <div id="player-health-box" class="vidas">
+            <div id="player-2" class="player">OPONENTE: <span id="player-2-health">⚡⚡⚡</span></div>
+            <div id="player-1" class="player">USUARIO: <span id="player-1-health">⚡⚡⚡</span></div>
         </div>
     
-    
-    
-        <div id="bullet_display">
-            <img src="" alt="">
+        <div id="bullet_display" class="balas">
         </div>
     </div>
 
     <script src="game.js"></script>
 </body>
-
 </html>

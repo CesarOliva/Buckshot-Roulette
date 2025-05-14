@@ -6,6 +6,8 @@
 body{
     background: url("images/background.png");
     background-color: rgb(81, 29, 29);
+    background-repeat: no-repeat;
+    background-size: cover;
     height: 100vh;
     display: flex;
     align-items: center;
@@ -79,12 +81,52 @@ body{
     margin: 0 10px;
 }
 
-#game {
-    margin: 0 auto;
-    padding: 2rem;
-    max-width: 600px;
+
+
+/*Estilos del juego*/
+.juego .gunMain {
+    padding: 10px;
+    width: 190px;
+}
+.juego .gunMain .action-button {
+    display: block;
+    transition: scale .2s;
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    padding: 1rem;
+    width: 100%;
+    color: white;
+    font-size: 1.5rem;
+    font-family: "IM Fell English SC";
+}
+.juego .gunMain .action-button:hover {
+    scale: 1.1;
+}
+.juego .gunMain #shotgun-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    height: 20rem;
+}
+.juego .gunMain #shotgun {
+    rotate: -15deg;
+    transition: scale .2s, rotate .4s;
+    width: 256px;
+}
+#shotgun[data-aim="1"] {
+    rotate: 90deg;
 }
 
+#shotgun[data-aim="2"] {
+    rotate: -90deg;
+}
+#shotgun-wrapper:hover #shotgun {
+    scale: 1.1;
+}
 #status {
     text-wrap: balance;
     display: flex;
@@ -100,92 +142,45 @@ body{
     font-weight: bold;
 }
 
-#shotgun-wrapper {
+.juego .balas {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     justify-content: center;
     align-items: center;
-    gap: 1rem;
-    cursor: pointer;
-    height: 20rem;
-
-}
-
-#shotgun {
-    rotate: -15deg;
-    transition: scale .2s, rotate .4s;
-    width: 256px;
-}
-
-#shotgun[data-aim="1"] {
-    rotate: 90deg;
-}
-
-#shotgun[data-aim="2"] {
-    rotate: -90deg;
-}
-
-#shotgun-wrapper:hover #shotgun {
-    scale: 1.1;
-}
-
-#bullet_display {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    display: flex;
-    gap: 5px;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.6);
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 8px;
     z-index: 1000;
+    position: absolute;
+    top: 50%;
+    right: 10%;
 }
-
-.bullet {
+.juego .balas .bullet {
+    margin: 0 5px;
     width: 20px;
     height: 40px;
     background-color: red;
     border-radius: 3px;
 }
-
-.bullet.blank{
-    background-color: gray ;
+.juego .balas .bullet.blank{
+    background-color: rgba(55, 55, 240, 0.616) ;
 }
-
-.action-button {
-    display: block;
-    transition: scale .2s;
-    cursor: pointer;
-    border: none;
-    background-color: transparent;
-    padding: 1rem;
-    width: 100%;
-    color: white;
-    font-size: 1.5rem;
+.juego .vidas{
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 999;
 }
-
-.action-button:hover {
-    scale: 1.1;
-}
-
-.player {
+.juego .vidas .player{
+    font-family: "IM Fell English SC";
+    color: #fff;
+    font-size: 16px;
+    font-weight: normal;
     margin: 0 auto;
     border-radius: 6px;
     padding: .5rem 1rem;
     width: fit-content;
 }
-
-.player-health-box{
-    position: fixes;
-    bottom: 10px;
-    right: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    align-items: flex-end;
-    z-index: 999;
-}
-
-.player.active {
-    background-color: rgba(255, 255, 255, 0.10);
+.juego .vidas .player.active {
+    background-color: rgba(255, 255, 255, 0.2);
 }
