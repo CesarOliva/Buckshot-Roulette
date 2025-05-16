@@ -12,6 +12,7 @@ app.use(express.json());
 // Servir archivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
+
 //Credenciales de la base de datos
 const db = mysql.createConnection({
     host: 'localhost',
@@ -20,21 +21,69 @@ const db = mysql.createConnection({
     database: 'buckshot_roulette'
 })
 
+
 //Conectar a la base de datos
 db.connect((err)=>{
     console.log('Base de datos conectada');
 });
 
-//Ruta para recibir los datos del formulario
-app.post('/api/save', (req, res)=>{
+
+/*Peticiones a la base de datos*/
+
+/*NOTA IMPORTANTE:
+CODIGO      SIGNIFICADO
+200         TODO BIEN
+201         CREADO CORRECTAMENTE
+400         DATOS INCORRECTOS
+401         CREDENCIALES INVALIDAS
+403         ACCESO RESTRINGIDO
+404         NO ENCONTRADO
+409         CONFLICTO (YA EXISTE)
+500         ERROR DEL SERVIDOR
+*/
+
+//Ruta para recibir los datos del registro
+app.post('/api/register', (req, res)=>{
     const { usuario, contraseña } = req.body;
-    const insertarUsuario = "insert into usuarios (Usuario, Contraseña) values (?,?)"
-    db.query(insertarUsuario, [usuario, contraseña], (err, resultado)=>{
-        if(err){
-            console.log(err);
+
+    //Verifica que no exista ya el usuario
+    db.query("select * from usuarios where Usuario=?", usuario, (error, results)=>{
+        if(error){
             return res.status(500).json({mensaje: 'Error al registrar el usuario'})
+        };
+
+        //Si no hay resultados coincidentes
+        if(results.length === 0){
+            const insertarUsuario = "insert into usuarios (Usuario, Contraseña) values (?,?)"
+            db.query(insertarUsuario, [usuario, contraseña], (error, resultado)=>{
+                if(error){
+                    return res.status(500).json({mensaje: 'Error al registrar el usuario'})
+                }
+
+                res.status(201).json({mensaje: 'Usuario registrado exitosamente',id:resultado.insertId});
+            });
+        }else{
+            res.status(409).json({mensaje: 'Usuario ya existente. Intente con otro'});
         }
-        res.status(200).json({mensaje: 'Usuario registrado exitosamente',id:resultado.insertId});
+    });
+});
+
+//Ruta para recibir los datos de logIn
+app.post('/api/login', (req, res)=>{
+    const { usuario, contraseña } = req.body;
+
+    //Verifica que coincidan los datos de usuario y contraseña
+    db.query("select * from usuarios where Usuario=? and Contraseña = ?", [usuario, contraseña], (error, resultado)=>{
+        if(error){
+            console.log(error);
+            return res.status(500).json({mensaje: 'Error al iniciar sesión'})
+        }
+
+        if(resultado.length === 0){
+            return res.status(400).json({mensaje: 'Usuario o contraseña incorrectos'});
+        }else{
+            res.status(200).json({mensaje: 'Inicio de Sesión exitoso'});
+        }
     })
 });
 
