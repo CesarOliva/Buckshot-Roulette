@@ -112,7 +112,7 @@ body{
     cursor: pointer;
     height: 20rem;
 }
-.juego .gunMain #shotgun {
+#shotgun {
     rotate: -15deg;
     transition: scale .2s, rotate .4s;
     width: 256px;
@@ -120,7 +120,6 @@ body{
 #shotgun[data-aim="1"] {
     rotate: 90deg;
 }
-
 #shotgun[data-aim="2"] {
     rotate: -90deg;
 }
