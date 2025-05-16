@@ -59,55 +59,75 @@ function iniciarJuego(){
 
 }
 
+// Variables globales
+let player1Health, player2Health, turn, liveShells, blankShells, chamber;
+let gameActive = false;
+let currentTimeout = null;
 
-
-
-let player1Health;
-let player2Health;
-let player1Items = [];
-let player2Items = [];
-let player1 = {hasKnife: false};
-let player2 = {hasKnife: false};
-let turn;
-let blankShells;
-let liveShells;
-let chamber;
-let cigarette;
-let beer;
-let knife;
-let lens;
-
+// Elementos del DOM
+const inicio = document.getElementById("inicio");
+const juego = document.getElementById("juego");
+const jugarBtn = document.getElementById("jugar");
+const shotgun = document.getElementById("shotgun");
 const statusElement = document.getElementById("status");
 const player1HealthElement = document.getElementById("player-1-health");
 const player2HealthElement = document.getElementById("player-2-health");
-const turnIndicatorElement = document.getElementById("turn-indicator");
-const shotgun = document.getElementById("shotgun");
+const bulletDisplay = document.getElementById("bullet_display");
+const shootOpponentBtn = document.getElementById("shoot-opponent");
+const shootSelfBtn = document.getElementById("shoot-self");
 
-function setStatus(message) {
-    statusElement.innerHTML = message;
+// Función para limpiar el timeout actual
+function clearCurrentTimeout() {
+    if (currentTimeout) {
+        clearTimeout(currentTimeout);
+        currentTimeout = null;
+    }
 }
 
-function damage(player, amount) {
-    if (player === "player1") {
-        player1Health -= amount;
-    }
-
-    if (player === "player2") {
-        player2Health -= amount;
-    }
+// Inicialización del juego
+function startGame() {
+    clearCurrentTimeout();
+    player1Health = 3;
+    player2Health = 3;
+    gameActive = true;
+    generateChamber();
+    turn = Math.floor(Math.random() * 2) + 1;
+    
+    shotgun.dataset.aim = "";
+    
     renderHealth();
+    renderTurn();
+    updateBulletDisplay();
+    setStatus(turn === 1 ? "Tu turno - ¡DISPARA!" : "Turno del oponente...");
+    
+    shootOpponentBtn.classList.toggle("hidden", turn !== 1);
+    shootSelfBtn.classList.toggle("hidden", turn !== 1);
+    
+    if (turn === 2) {
+        currentTimeout = setTimeout(opponentTurn, 1500);
+    }
 }
 
+// Turno del oponente (IA)
+function opponentTurn() {
+    if (!gameActive) return;
+    
+    const shootAtPlayer = player2Health === 1 ? Math.random() < 0.4 : Math.random() < 0.7;
+    shoot(shootAtPlayer ? "opponent" : "self");
+}
 
-function generateRandomChamber(){
-    chamber = [];
-    for(let i = 0; i < 6; i++){
-        const isLive = Math.random() < 0.3; //30% DE PROBABILDAD
-        chamber.push(isLive ? 'live' : 'fake') 
-    }
+// Generar cartucho balanceado
+function generateChamber() {
+    const minLive = 1;
+    const maxLive = 4;
+    liveShells = Math.floor(Math.random() * (maxLive - minLive + 1)) + minLive;
+    blankShells = 6 - liveShells;
+    
+    chamber = Array(blankShells).fill('blank').concat(Array(liveShells).fill('live'));
     shuffleArray(chamber);
 }
 
+// Barajar el cartucho
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -115,358 +135,141 @@ function shuffleArray(array) {
     }
 }
 
-
-function bulletTemporal(){
-    const bulletDisplay = document.getElementById("bullet_display");
-    bulletDisplay.innerHTML = ''; //LIMPIA
-
-    chamber.forEach(shell => {
-        const bullet = document.createElement("div");
-        bullet.classList.add("bullet");
-        if(shell === 'blank'){
-            bullet.classList.add("blank");
-        }
-        bulletDisplay.appendChild(bullet);
-    });
-
-    bulletDisplay.style.display = 'flex';
-
-    //OCULTAR DESPUES DE CINCO SEGUNDOS
-    setTimeout(() => {
-        bulletDisplay.style.display = 'none';
-    }, 5000 );
-
-    alert('El oponente esta revolviendo el cartucho');
-
-}
-
+// Disparar
 function shoot(player) {
+    if (!gameActive || chamber.length === 0) return;
 
+    clearCurrentTimeout();
+    
     const shell = chamber.pop();
-    if (shell === 'live') {
+    const isOpponent = (player === "opponent");
+    const isLive = (shell === "live");
+    const targetPlayer = (turn === 1) ? 
+        (isOpponent ? "player2" : "player1") : 
+        (isOpponent ? "player1" : "player2");
 
-    let damageAmount = 1;
+    shotgun.dataset.aim = (turn === 1) ? (isOpponent ? "2" : "1") : (isOpponent ? "1" : "2");
 
-    // Verifica si hay cuchillo activo para aplicar daño doble
-    if (turn === 1 && player1.hasKnife) {
-        damageAmount = 2;
-        player1.hasKnife = false;
-    }
-
-    if (turn === 2 && player2.hasKnife) {
-        damageAmount = 2;
-        player2.hasKnife = false;
-    }
-
-    if (turn === 1) {
-        if (player === "opponent") {
-            shotgun.dataset.aim = "2";
-            setTimeout(() => {
-                alert("¡Se disparó una bala real!");
-                damage("player2", damageAmount);
-            }, 1000);
-
-        } else if (player === "self") {
-            shotgun.dataset.aim = "1";
-            setTimeout(() => {
-                alert("¡Se disparó una bala real!");
-                damage("player1", damageAmount);
-            }, 1000);
+    currentTimeout = setTimeout(() => {
+        setStatus(`¡Bala ${isLive ? "REAL" : "falsa"}! ${isLive ? "¡DAÑO!" : "¡SALVASTE!"}`);
+        if (isLive) {
+            damage(targetPlayer, 1);
         }
-    }
-
-    if (turn === 2) {
-        if (player === "opponent") {
-            shotgun.dataset.aim = "1";
-            setTimeout(() => {
-                alert("¡Se disparó una bala real!");
-                damage("player1", damageAmount);
-            }, 1000);
-
-        } else if (player === "self") {
-            shotgun.dataset.aim = "2";
-            setTimeout(() => {
-                alert("¡Se disparó una bala real!");
-                damage("player2", damageAmount);
-            }, 1000);
-        }
-    }
-    } else {
-
-        if (turn == 1) {
-            if (player === "opponent") {
-                shotgun.dataset.aim = "2";
-                setTimeout(() => {
-                    alert("Se disparo una bala falsa!"); 
-                }, 1000);
-
-            } else if (player === "self") {
-                shotgun.dataset.aim = "1";
-                setTimeout(() => {
-                    alert("Se disparo una bala falsa!");
-                    nextTurn();
-                }, 1000);
-
+        
+        updateBulletDisplay();
+        
+        if (!gameActive) return;
+        
+        if (isLive || isOpponent) {
+            if (chamber.length === 0) {
+                currentTimeout = setTimeout(reload, 1500);
+            } else {
+                currentTimeout = setTimeout(nextTurn, 1500);
             }
-        }
-
-        if (turn == 2) {
-            if (player === "opponent") {
-                shotgun.dataset.aim = "1";
-                setTimeout(() => {
-                    alert("Se disparo una bala falsa!");
-                }, 1000);
-
-            } else if (player === "self") {
-                shotgun.dataset.aim = "2";
-                setTimeout(() => {
-                    alert("Se disparo una bala falsa!");
-                    nextTurn();
-                }, 1000);
-            }
-        }
-    }
-    if (chamber.length === 0) {
-        reload();
-    }
-
-    nextTurn();
-}
-
-const ITEMS = {
-    cigarette : {
-        name : "Cigarro",
-        description: "Recupera 1 punto de vida",
-        use : (player) => {
-            if (player1 === 'player1' && player1Health < 3) player1Health ++;
-            if(player2 === 'player2' && player2Health < 3) player2Health++;
-            renderHealth();
-        }
-    },
-
-    beer : {
-        name : "Cerveza",
-        description: "Reduce la cantidad de balas",
-        use : (player) => {
-            if(chamber.length > 0){
-                chamber = chamber.filter(b => b !== 'live');
-                chamber.push('blank');
-            }
-        } 
-    },
-
-    lens : {
-        name : "Lupa",
-        description: "Muestra la siguiente bala",
-        use : (player) => {
-            if(chamber.length > 0){
-                alert('La siguiente bala es: ${chamber[chamber.length -1]}');
-            }
-        }
-    },
-
-    knife : {
-        name : "Cuchillo",
-        description: "Porvoca doble daño",
-        uso : (player) => {
-            player.hasKnife = true;
-        } 
-    }
-}
-
-function randomItems(){
-    const keys = Object.keys(ITEMS);
-    const numItems = Math.floor(Math.random()*3)+2;
-    const shuffled = keys.sort(() => .5 -Math.random());
-    return shuffled.slice(0,numItems);
-}
-
-
-function renderItems(){
-    const container = document.getElementById("items-list");
-    container.innerHTML = ''; // Limpia ítems anteriores
-
-    player1Items.forEach((item, index) => {
-        const btn = document.createElement("button");
-        btn.innerText = item;
-        btn.classList.add("item-button");
-        btn.onclick = () => useItem(item, index);
-        container.appendChild(btn);
-    });
-    /*const container = document.getElementById("player-items");
-    container.innerHTML = "";
-
-    player1Items.forEach((key,index) => {
-        const item = ITEMS[keys];
-        const btn = document.createElement("button");
-        btn.innerText = inter.name;
-        btn.title = item.description;
-        btn.onclick = () => {
-            item.use('player1');
-            player1Items.splice(index,1);
-            renderItems();
-        };
-        container.appendChild(btn);
-    });*/
-}
-
-function userItems(player, item,index){
-    if(payer === "player1"){
-        switch(item){
-            case "Cigarro":
-                if(player1Health < 3){
-                    player1Health++;
-                    alert("Cigarro, +1 vida");
-                    renderHealth();
-                } else {
-                    alert("Ya tienes la vida completa");
-                    return;
-                }
-                break;
-
-            case "Cerveza":
-                if (chamber.length > 0) {
-                const removed = chamber.pop();
-                    alert(`Descargaste una bala : ${removed === 'live' ? 'Real' : 'Falsa'}`);
-                } else {
-                alert("No hay balas para quitar");
-            }
-                break;
-
-            case "Lupa":
-                alert("La siguiente bala es: "+chamber[chamber.length - 1]==='live' ? 'Real' : 'Falsa');
-                break;
-                
-            case "Cuchillo":
-                player1.hasKnife = true;
-                alert("El sigueinte disparo hara el doble de daño");
-                break;    
-        }
-        player1Items.splice(index, 1);
-        renderItems();
-    }
-}
-
-function renderHealth() {
-    if (player1Health <= 0) {
-        setTimeout(() => {
-            alert("Jugador 2 Gana!!");
-            startGame();
-        }, 1000);
-    }
-
-    if (player2Health <= 0) {
-        setTimeout(() => {
-            alert("Jugador 1 Gana!!");
-            startGame();
-        }, 1000);
-    }
-    player1HealthElement.innerText = '⚡️'.repeat(player1Health);
-    player2HealthElement.innerText = '⚡️'.repeat(player2Health);
-}
-
-function nextTurn() {
-    setTimeout(() => {
-        shotgun.dataset.aim = "";
-        if (turn == 1) {
-            turn = 2;
-        } else {
-            turn = 1;
-        }
-        renderTurn();
-
-        if (turn === 2){
-           // setTimeout(()=> {
-              //  if(player2Items.length > 0 && Math.random()< .5){
-                   // const key =player2Items.pop();
-                 //   ITEMS[key].use('player2');
-               // }
-         //   });
-
-            setTimeout(() => {
-                
-                if(player2Items.length > 0 && Math.random()< .5){
-                    const key =player2Items.pop();
-                    ITEMS[key].use('player2');
-                 }
-                const liveCount = chamber.filter(b => b === 'live').length;
-                const totalLeft = chamber.length;
-
-                const probaLive = liveCount / totalLeft;
-
-                let decision;
-                if (probaLive > 0.5 || player1Health === 1){
-                    decision = 'opponent';
-                } else{
-                    decision = 'self';
-                }
-
-                shoot(decision);
-                
-            }, 1000);
+        } else if (!isOpponent) {
+            currentTimeout = setTimeout(nextTurn, 1500);
         }
     }, 1000);
 }
 
-function renderTurn() {
-    if (turn == 1) {
-        document.getElementById("player-2").classList.remove("active");
-        document.getElementById("player-1").classList.add("active");
-    } else {
-        document.getElementById("player-1").classList.remove("active");
-        document.getElementById("player-2").classList.add("active");
+// Recargar
+function reload() {
+    if (!gameActive) return;
+    
+    clearCurrentTimeout();
+    generateChamber();
+    setStatus(`Recarga: ${liveShells} bala(s) real(es) y ${blankShells} falsa(s)`);
+    updateBulletDisplay();
+    shotgun.dataset.aim = "";
+    currentTimeout = setTimeout(nextTurn, 1500);
+}
+
+// Daño al jugador
+function damage(player, amount) {
+    if (!gameActive) return;
+    
+    if (player === "player1") player1Health -= amount;
+    if (player === "player2") player2Health -= amount;
+    renderHealth();
+}
+
+// Mostrar salud
+function renderHealth() {
+    player1HealthElement.innerText = '⚡'.repeat(Math.max(0, player1Health));
+    player2HealthElement.innerText = '⚡'.repeat(Math.max(0, player2Health));
+
+    if (player1Health <= 0 || player2Health <= 0) {
+        gameActive = false;
+        clearCurrentTimeout();
+        
+        const winner = player1Health <= 0 ? "¡OPONENTE GANA!" : "¡TÚ GANAS!";
+        
+        shootOpponentBtn.classList.add('hidden');
+        shootSelfBtn.classList.add('hidden');
+        
+        setStatus(`${winner} <button id="reiniciar-btn" style="cursor: pointer;">JUGAR DE NUEVO</button>`);
+        
+        shotgun.dataset.aim = "";
+        
+        const restartBtn = document.getElementById('reiniciar-btn');
+        if (restartBtn) {
+            restartBtn.onclick = function() {
+                inicio.style.display = "none";
+                juego.style.display = "block";
+                startGame();
+            };
+        }
     }
 }
 
-function reload() {
-    alert("Se termino el cartucho, recargando...");
-
-    //generateRandomChamber()
-    const totalShells = 6;
-
-    do{
-    liveShells = Math.floor(Math.random() * 5) + 2;
-    blankShells = totalShells - liveShells;
-    }while(liveShells === 0 || blankShells === 0);
-
-    alert(`${liveShells} live & ${blankShells} blank shells`);
-    chamber = Array(blankShells).fill('blank').concat(Array(liveShells).fill('live'));
-    shuffleArray(chamber);
-
-    bulletTemporal();
+// Cambiar turno
+function nextTurn() {
+    shotgun.dataset.aim = "";
+    turn = turn === 1 ? 2 : 1;
+    renderTurn();
+    
+    if (turn === 2 && gameActive) {
+        setStatus("Turno del oponente...");
+        currentTimeout = setTimeout(opponentTurn, 1500);
+    } else if (gameActive) {
+        setStatus("Tu turno - ¡DISPARA!");
+    }
 }
 
-function startGame() {
-    alert(`Comienza el Juego!!`);
+// Mostrar turno actual
+function renderTurn() {
+    document.getElementById("player-1").classList.toggle("active", turn === 1);
+    document.getElementById("player-2").classList.toggle("active", turn === 2);
+    
+    shootOpponentBtn.classList.toggle("hidden", turn !== 1);
+    shootSelfBtn.classList.toggle("hidden", turn !== 1);
+}
 
+// Actualizar balas en UI
+function updateBulletDisplay() {
+    bulletDisplay.innerHTML = "";
+    chamber.forEach(shell => {
+        const bullet = document.createElement("div");
+        bullet.className = `bullet ${shell}`;
+        bulletDisplay.appendChild(bullet);
+    });
+}
 
-    totalShells = 6;
-
-    do{
-    liveShells = Math.floor(Math.random() * 5) + 2;
-    blankShells = totalShells - liveShells;
-    }while(liveShells === 0 || blankShells === 0);
-
-    chamber = Array(blankShells).fill('blank').concat(Array(liveShells).fill('live'));
-    shuffleArray(chamber);
-
-    bulletTemporal();
-
-    player1Health = 3;
-    player2Health = 3;
-
-    player1Items = getRandomItems();
-    player2Items = getRandomItems();
-
-    //generateRandomChamber();
-    renderHealth();
-    renderItems();
-
-
-    turn = Math.floor(Math.random() * 2) + 1;
-    renderTurn();
-
-
+// Mensajes de estado
+function setStatus(message) {
+    statusElement.innerHTML = message;
 }
 
 startGame();
+
+shootOpponentBtn.addEventListener("click", function() {
+    if (turn === 1 && gameActive) {
+        shoot("opponent");
+    }
+});
+
+shootSelfBtn.addEventListener("click", function() {
+    if (turn === 1 && gameActive) {
+        shoot("self");
+    }
+});

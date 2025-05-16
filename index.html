@@ -1,6 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
 
+<!DOCTYPE html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Doto:wght@100..900&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
     <script src="//unpkg.com/alpinejs" defer></script>
 </head>
-
 <body>
     <div class="inicio" id="inicio">
         <h2 class="up">BUCKSHOT</h2>
@@ -28,19 +27,17 @@
 
     <div class="juego" id="juego" style="display: none;">
         <div id="game" class="gunMain">
-            <div @mouseover="open = true" @mouseover.outside="open = false" x-data="{ open: false }" id="shotgun-wrapper">
-                <button class="action-button" x-show="open" x-transition onclick="shoot('opponent')" id="shoot-opponent">OPONENTE</button>
-                <img :style="{ scale: open ? 1.1 : '' }" id="shotgun" src="images/shotgun.png" alt="A picture of a shotgun">
-                <button class="action-button" x-show="open" x-transition onclick="shoot('self')"id="shoot-self">USUARIO</button>
+            <div id="status"></div>
+            <div id="shotgun-wrapper">
+                <button class="action-button shoot-button" id="shoot-opponent">OPONENTE</button>
+                <img id="shotgun" src="images/shotgun.png" alt="Escopeta">
+                <button class="action-button shoot-button" id="shoot-self">USUARIO</button>
             </div>
-        </div>
-        
-        <div id="player-health-box" class="vidas">
-            <div id="player-2" class="player">OPONENTE: <span id="player-2-health">⚡⚡⚡</span></div>
-            <div id="player-1" class="player">USUARIO: <span id="player-1-health">⚡⚡⚡</span></div>
-        </div>
-    
-        <div id="bullet_display" class="balas">
+            <div id="player-health-box" class="vidas">
+                <div id="player-1" class="player">USUARIO: <span id="player-1-health">⚡⚡⚡</span></div>
+                <div id="player-2" class="player">OPONENTE: <span id="player-2-health">⚡⚡⚡</span></div>
+            </div>
+            <div id="bullet_display" class="balas"></div>
         </div>
     </div>
 
