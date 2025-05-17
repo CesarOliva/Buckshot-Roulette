@@ -1,10 +1,13 @@
 /*Variables globales*/
-var shootSound, blankSound, reloadSound, defib;
+var shootSound, blankSound, reloadSound, defib, cigaretteSound, beerSound, lensSound, handsawSound;
 var gameActive = false;
 var activeTurn;
 var liveBullet, blanckBullet;
 var player1Health, player2Health;
 var chamber;
+var player1 = {hasKnife: false}, player2 = {hasKnife: false};
+var player1Items = [];
+var player2Items = [];
 
 //Elementos del DOM
 const audio = document.getElementById("audio");
@@ -16,9 +19,9 @@ const player1HealthElement = document.getElementById("player-1-health");
 const player2HealthElement = document.getElementById("player-2-health");
 const shotgun = document.getElementById("shotgun");
 const bloodImg = document.getElementById("blood");
+const container = document.getElementById("items-list-player");
+const botcontainer = document.getElementById("items-list-bot");
 let currentTimeout = null;
-
-// Variables globales
 
 // Inicialización del juego
 function startGame() {
@@ -35,6 +38,10 @@ function startGame() {
     blankSound = new Audio('sounds/blanckBullet.wav');
     reloadSound = new Audio('sounds/rack shotgun.ogg');
     defib = new Audio('sounds/defib.ogg');
+    handsawSound = new Audio('sounds/handsaw.ogg');
+    beerSound = new Audio('sounds/beer.ogg');
+    cigaretteSound = new Audio('sounds/cigarrette.ogg');
+    lensSound = new Audio('sounds/magnifier.ogg');
 
     //Genera las balas aleatoriamente.
     generateChamber();    
@@ -46,6 +53,15 @@ function startGame() {
     //Indica de quien es el turno y la vida que tiene cada personaje
     showTurn();
     showHealth();
+
+    player1Health = 3;
+    player2Health = 3;
+
+    player1Items = randomItems();
+    player2Items = randomItems();
+
+    showItems(); 
+
 
     clearCurrentTimeout();
 
@@ -265,8 +281,20 @@ function shoot(player) {
         if(!isLive && activeTurn === 1 && !isOpponent) setStatus(`¡QUE HUEVOS!`);
         if(!isLive && activeTurn === 1 && isOpponent) setStatus(`¡BUUUU, MALA SUERTE!`);
         
-        if (isLive) {
-            damage(targetPlayer, 1);
+        if(activeTurn === 1){
+            if (isLive && player1.hasKnife) {
+                damage(targetPlayer, 2);
+                player1.hasKnife = false;
+            }else if(isLive){
+                damage(targetPlayer, 1);
+            }
+        }else{
+            if (isLive && player2.hasKnife) {
+                damage(targetPlayer, 2);
+                player2.hasKnife = false;
+            }else if(isLive){
+                damage(targetPlayer, 1);
+            }            
         }
         
         if (!gameActive) return;
@@ -315,6 +343,224 @@ function nextTurn() {
         currentTimeout = setTimeout(opponentTurn, 1500);
     } else if (gameActive) {
         setStatus("Tu turno - ¡DISPARA!");
+    }
+    
+    if (activeTurn === 2){
+        setTimeout(() => {
+            if (player2Items.length > 0) {
+                // Intentar usar un ítem con 50% de probabilidad
+                if (Math.random() < 0.5) {
+                    const index = Math.floor(Math.random() * player2Items.length);
+                    const key = player2Items[index];
+        
+                    //items que usara el bot
+                    ITEMS[key].use('player2');
+                    setStatus(`OPONENTE USÓ ${key}`);
+                    //se elimina solo un item (el que usa)
+                    player2Items.splice(index, 1);
+                    showItems();
+                }
+            }
+            
+            //cuenta cuantas balas reales quedan en el cargador
+            const liveCount = chamber.filter(b => b === 'live').length;
+
+            //obtiene la cant. total de balas
+            const totalLeft = chamber.length;
+    
+            const probaLive = liveCount / totalLeft;
+    
+            let decision;
+            //el bot tiene 50% prob. de disparar o si el j1 tiene una vida, disparar al oponente
+            if (probaLive > 0.5 || player1Health === 1){
+                decision = 'opponent';
+            } else{
+                //el bot se dispara a si mismo
+                decision = 'self';
+            }
+    
+            shoot(decision);
+        }, 1000);
+    }
+}
+
+// Declaracion de los items, nombre, descripcion, uso
+const ITEMS = {
+    cigarette : {
+        name : "cigarette",
+        description: "Recupera 1 punto de vida",
+        use : (player) => {
+            // Si los jugadores tienen menos de 3 vidas, el cigarro repone una vida
+            if (player === 'player1' && player1Health < 3) player1Health ++;
+            if(player === 'player2' && player2Health < 3) player2Health++;
+            // Llama al metodo vidas de los jugadores
+            showHealth();
+        }
+    },
+
+    beer : {
+        name : "beer",
+        description: "Reduce la cantidad de balas",
+        use : (player) => {
+            //Si el cargador tiene balas, se elimina la siguiente bala en disparar
+            if(chamber.length > 0){
+                chamber.pop(); //Elimina la ultima bala
+            }
+        } 
+    },
+
+    lens : {
+        name : "lens",
+        description: "Muestra la siguiente bala",
+        use : (player) => {
+            //Si el cargador tiene balas el jugador puede ver cual bala sigue
+            if(chamber.length > 0){
+                setStatus(`La siguiente bala es: ${chamber[chamber.length -1]}`);
+            }
+        }
+    },
+
+    knife : {
+        name : "knife",
+        description: "Provoca doble daño",
+        use : (player) => {
+            //Unicamente cambia la var boolean, player has knife
+            player === 'player1' ? player1.hasKnife = true : player2.hasKnife = true;
+        }
+    }
+}
+
+// Funcion asigna Items de forma random
+function randomItems(){
+    //Obtiene los nombres de los items
+    const keys = Object.keys(ITEMS);
+
+    //Asigna minimo 2 Items randoms al jugador
+    const numItems = Math.floor(Math.random()*3)+2;
+    
+    //Reordena el array al azar
+    const shuffled = keys.sort(() => .5 -Math.random());
+
+    // Regresa los items sin repetir
+    return shuffled.slice(0,numItems);
+}
+
+// funcion que muestra los items en pantalla
+function showItems(){
+    container.innerHTML = ``; // Limpia ítems anteriores
+    botcontainer.innerHTML = ``; // Limpia los items anteriores
+
+    player1Items.forEach((item, index) => {
+        //se crea una imagen del item
+        const img = document.createElement("img");
+        img.src = `images/${item}.png`; // usa el nombre del ítem
+        img.alt = item;
+        img.classList.add("item-icon");
+
+        //al hacer clic se ejecuta la accion
+        if(gameActive){
+            img.addEventListener('click', () => useItems("player1",item, index));
+        }
+        container.appendChild(img);
+    });
+
+
+    player2Items.forEach((item,index) => {
+        //se crea una imagen del item
+        const img = document.createElement("img");
+        img.src = `images/${item}.png`;
+        img.alt = item;
+        img.classList.add("item-icon");
+
+        botcontainer.appendChild(img);
+    });
+}
+
+//funcion que utiliza los items
+function useItems(player, item, index){
+    if(player === "player1"){
+        switch(item){
+            case "cigarette":
+                if(player1Health < 3){  //si tiene menos de 3 vidas
+                    player1Health++;    //se añade una vida
+                    setStatus("Cigarro, +1 vida");
+                    //llama a la funcion de salud
+                    showHealth();
+                }else {
+                    setStatus("?????????");
+                }
+                cigaretteSound.play();
+                break;
+
+            case "beer":
+                //si hay balas en el cargador, se remueve una
+                if (chamber.length > 0) {
+                    let removed = chamber.pop();
+                    setStatus(`Se descargó una bala : ${removed === 'live' ? 'Real' : 'Falsa'}`);
+                } else {
+                    //mensaje en caso de  que el cartucho este vacio
+                    setStatus("No hay balas para quitar");
+                }
+                beerSound.play();
+                break;
+
+            case "lens":
+                //mensaje que bala es la proxima en dispararse
+                setStatus("La siguiente bala es: "+(chamber[chamber.length - 1]==='live' ? 'Real' : 'Falsa'));
+                lensSound.play();                
+                break;
+                
+            case "knife":
+                //cambia la var player has knife
+                player1.hasKnife = true;
+                //mensaje sobre el daño que provocara
+                setStatus("El siguiente disparo hara el doble de daño");
+                handsawSound.play();
+                break;    
+            }
+        //solo se quitara un item (el que se utilizo)
+        player1Items.splice(index, 1);
+        //llama la funcion de items
+        showItems();
+    }else{
+        switch(item){
+            case "cigarette":
+                if(player2Health < 3){  //si tiene menos de 3 vidas
+                    player2Health++;    //se añade una vida
+                    setStatus("¡SE HA AUMENTADO UNA VIDA!");
+                    //llama a la funcion de salud
+                    showHealth();
+                } else {
+                    setStatus("?????????");
+                }
+                break;
+
+            case "beer":
+                //si hay balas en el cargador, se remueve una
+                if (chamber.length > 0) {
+                    let removed = chamber.pop();
+                    setStatus(`Se descargó una bala : ${removed === 'live' ? 'Real' : 'Falsa'}`);
+                } else {
+                    //mensaje en caso de  que el cartucho este vacio
+                    setStatus("No hay balas para quitar");
+                }
+                break;
+
+            case "lens":
+                //mensaje que bala es la proxima en dispararse
+                setStatus("Interesante....");
+                //Agregar en funcion a que bala es
+                break;
+                
+            case "knife":
+                //cambia la var player has knife
+                player2.hasKnife = true;
+
+                //mensaje sobre el daño que provocara
+                setStatus("El siguiente disparo hara el doble de daño");
+                break;                    
+        }
+        showItems();
     }
 }
 

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buckshot Roulette Web</title>
-    <link rel="shortcut icon" href="/images/favicon.jpg" type="image/x-icon">
+    <link rel="shortcut icon" href="images/favicon.jpg" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Doto:wght@100..900&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
     <script src="//unpkg.com/alpinejs" defer></script>
@@ -48,8 +48,20 @@
             
             <div id="bullet_display" class="balas"></div>
         </div>
-    </div>
 
+        <div class="items-container">
+            <div id = "player-items">
+                <h3>Tus Items</h3>
+                <div id = "items-list-player">
+                </div>
+            </div>
+            <div id = "bot-items">
+                <h3>Bot Items</h3>
+                <div id = "items-list-bot">
+                </div>
+            </div>
+        </div>
+    </div>
     <img id="blood" src="images/blood-removebg-preview.png" alt="">
 
     <audio loop id="audio" src="sounds/FormNoise.ogg" type="audio/mpeg"></audio>
