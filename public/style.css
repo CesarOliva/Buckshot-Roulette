@@ -218,3 +218,12 @@ body{
 #reiniciar-btn:active {
     transform: translateY(1px);
 }
+
+#blood{
+    width: 100%;
+    height: 100vh;
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: absolute;
+    display: none;
+}

@@ -1,119 +1,273 @@
-// Variables globales
-let player1Health, player2Health, turn, liveShells, blankShells, chamber;
-let gameActive = false;
-let currentTimeout = null;
-let shootSound, blankSound, reloadSound; //Pa los sonidos bb
+/*Variables globales*/
+var shootSound, blankSound, reloadSound, defib;
+var gameActive = false;
+var activeTurn;
+var liveBullet, blanckBullet;
+var player1Health, player2Health;
+var chamber;
 
-// Elementos del DOM
-const inicio = document.getElementById("inicio");
-const juego = document.getElementById("juego");
-const jugarBtn = document.getElementById("jugar");
-const shotgun = document.getElementById("shotgun");
+//Elementos del DOM
+const audio = document.getElementById("audio");
+const divBalas = document.getElementById("bullet_display");
 const statusElement = document.getElementById("status");
-const player1HealthElement = document.getElementById("player-1-health");
-const player2HealthElement = document.getElementById("player-2-health");
-const bulletDisplay = document.getElementById("bullet_display");
 const shootOpponentBtn = document.getElementById("shoot-opponent");
 const shootSelfBtn = document.getElementById("shoot-self");
+const player1HealthElement = document.getElementById("player-1-health");
+const player2HealthElement = document.getElementById("player-2-health");
+const shotgun = document.getElementById("shotgun");
+const bloodImg = document.getElementById("blood");
+let currentTimeout = null;
 
-// Función para limpiar el timeout actual
-function clearCurrentTimeout() {
-    if (currentTimeout) {
-        clearTimeout(currentTimeout);
-        currentTimeout = null;
-    }
-}
+// Variables globales
 
 // Inicialización del juego
 function startGame() {
-    clearCurrentTimeout();
+    //Se establecen las vidas y el estado del juego
     player1Health = 3;
     player2Health = 3;
     gameActive = true;
-
-        // Cargar sonidos
+    activeTurn = 1; //Empieza siempre el usuario
+    audio.setAttribute('src', 'sounds/backgroundNoise.ogg'); //Cambia la musica de fondo
+    shotgun.dataset.aim = "";
+    
+    // Carga los sonidos
     shootSound = new Audio('sounds/liveBullet.wav');
     blankSound = new Audio('sounds/blanckBullet.wav');
     reloadSound = new Audio('sounds/rack shotgun.ogg');
+    defib = new Audio('sounds/defib.ogg');
 
-    generateChamber();
-    turn = Math.floor(Math.random() * 2) + 1;
-    
-    shotgun.dataset.aim = "";
-    
-    renderHealth();
-    renderTurn();
-    updateBulletDisplay();
-    setStatus(turn === 1 ? "Tu turno - ¡DISPARA!" : "Turno del oponente...");
-    
-    shootOpponentBtn.classList.toggle("hidden", turn !== 1);
-    shootSelfBtn.classList.toggle("hidden", turn !== 1);
-    
-    if (turn === 2) {
-        currentTimeout = setTimeout(opponentTurn, 1500);
-    }
+    //Genera las balas aleatoriamente.
+    generateChamber();    
+
+    setTimeout(()=>{
+        reloadSound.play(); //Hace el sonido de recarga
+    }, 500);
+
+    //Indica de quien es el turno y la vida que tiene cada personaje
+    showTurn();
+    showHealth();
+
+    clearCurrentTimeout();
+
+    //Establece el texto del estado
+    setStatus("EMPIEZA EL JUEGO - ¡DISPARA!");
 }
 
-// Turno del oponente (IA)
-function opponentTurn() {
-    if (!gameActive) return;
-    
-    const shootAtPlayer = player2Health === 1 ? Math.random() < 0.4 : Math.random() < 0.7;
-    shoot(shootAtPlayer ? "opponent" : "self");
-}
-
-// Generar cartucho balanceado
+// Generar las balas del cartucho
 function generateChamber() {
     const minLive = 1;
     const maxLive = 4;
-    liveShells = Math.floor(Math.random() * (maxLive - minLive + 1)) + minLive;
-    blankShells = 6 - liveShells;
+    liveBullet = Math.floor(Math.random() * (maxLive - minLive + 1)) + minLive;  //Cantidad de balas activas
+    blanckBullet = 6 - liveBullet;                                               //Cantidad de balas vacias
     
-    chamber = Array(blankShells).fill('blank').concat(Array(liveShells).fill('live'));
-    shuffleArray(chamber);
+    //Agrega las balas al cartucho
+    chamber = Array(blanckBullet).fill('blank').concat(Array(liveBullet).fill('live')); //Llena de un arreglo con las balas
+
+    //Muestra la cantidad de balas buenas y malas antes de estar revueltas
+    showBulletDisplay();
+
+    //Mezcla el cartucho
+    shuffleChamber(chamber);
 }
 
-// Barajar el cartucho
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
+// Mezcla las balas del cartucho
+function shuffleChamber(chamber){
+    // Algoritmo de Fisher-Yates que intercambia la posición i por el aleatorio j
+    for (let i = chamber.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+        [chamber[i], chamber[j]] = [chamber[j], chamber[i]];
     }
 }
 
-// Disparar
-function shoot(player) {
-    if (!gameActive || chamber.length === 0) return;
+// Muestra las balas por unos breves segundos
+function showBulletDisplay() {
+    //Muestra las balas
+    divBalas.style.display = "flex";
+    divBalas.innerHTML = "";
+    chamber.forEach(shell => {
+        const bullet = document.createElement("div");
+        bullet.className = `bullet ${shell}`;
+        divBalas.appendChild(bullet);
+    });
+
+    //Pasados dos segundos las quita
+    setTimeout(()=>{
+        divBalas.style.display = 'none';
+    }, 2000);
+}
+
+// Recargar el cartucho
+function reload() {
+    //Apunta neutro por el momento
+    shotgun.dataset.aim = "";
 
     clearCurrentTimeout();
     
-    const shell = chamber.pop();
-    const isOpponent = (player === "opponent");
-    const isLive = (shell === "live");
-    const targetPlayer = (turn === 1) ? 
-        (isOpponent ? "player2" : "player1") : 
-        (isOpponent ? "player1" : "player2");
+    //Genera las balas aleatorias y posteriormente las revuelve
+    generateChamber();
 
-    shotgun.dataset.aim = (turn === 1) ? (isOpponent ? "2" : "1") : (isOpponent ? "1" : "2");
+    //Muestra el mensaje de status
+    setStatus(`Recarga: ${liveBullet} bala(s) real(es) y ${blanckBullet} falsa(s)`);
+    
+    //Sonido de recarga
+    reloadSound.play();
+    
+    currentTimeout = setTimeout(nextTurn, 1500);
+}
 
-        // Reproducir sonido según el tipo de bala
-        setTimeout(()=>{
-            if (isLive) {
-                shootSound.currentTime = 0;
-                shootSound.play();
-            } else {
-                blankSound.currentTime = 0;
-                blankSound.play();
+// Mostrar turno actual
+function showTurn() {
+    //Obtiene los elementos que indican las vidas e intercambia la clase activa
+    document.getElementById("player-1").classList.toggle("active", activeTurn === 1);
+    document.getElementById("player-2").classList.toggle("active", activeTurn === 2);
+    
+    //Oculta los botones cuando es turno del oponente
+    shootOpponentBtn.classList.toggle("hidden", activeTurn !== 1);
+    shootSelfBtn.classList.toggle("hidden", activeTurn !== 1);
+}
+
+// Mostrar la salud de los jugadores
+function showHealth() {
+    //Agrega rayitos indicando cuantas vidas tiene
+    player1HealthElement.innerText = '⚡'.repeat(Math.max(0, player1Health));
+    player2HealthElement.innerText = '⚡'.repeat(Math.max(0, player2Health));
+
+    //Cuando la vida de alguno de los jugadores sea 0 o menor a 0
+    if (player1Health <= 0 || player2Health <= 0) {
+        //Cambia el estado del juego a falso
+        gameActive = false;
+
+        //Estado de la escopeta a neutro
+        shotgun.dataset.aim = "";
+
+        //muestra quien gana
+        var winner;
+        if(player1Health <=0){
+            winner = "OPONENTE";
+            audio.setAttribute('src', 'sounds/death.ogg')
+        }else{
+            winner = "USUARIO"
+            audio.setAttribute('src', 'sounds/win.ogg')
+        }
+
+        //Oculta los botones de disparo
+        shootOpponentBtn.classList.add('hidden');
+        shootSelfBtn.classList.add('hidden');
+        
+        //Crea un boton para reiniciar el juego
+        setStatus(`¡${winner} GANA! <button id="reiniciar-btn" style="cursor: pointer;">JUGAR DE NUEVO</button>`);
+        
+        const restartBtn = document.getElementById('reiniciar-btn');
+        restartBtn.onclick = function(e) {
+            startGame();
+        };
+
+        clearCurrentTimeout();
+    }
+}
+
+//Botones de disparo
+shootOpponentBtn.addEventListener("click", function() {
+    if (activeTurn === 1 && gameActive) {
+        shoot("opponent");
+    }
+});
+
+shootSelfBtn.addEventListener("click", function() {
+    if (activeTurn === 1 && gameActive) {
+        shoot("self");
+    }
+});
+
+
+// Función de disparar
+function shoot(player) {
+    if(!gameActive) return;
+
+    clearCurrentTimeout();
+    
+    var shell = chamber.pop(); //Guarda y quita el ultimo elemento del arreglo
+    var isOpponent = (player === "opponent"); //Guarda en booleano si a quien tira es oponente
+    var isLive = (shell === "live"); //Guarda en booleano si es una bala real
+
+    //Obtiene el jugador a quien se disparará
+    var targetPlayer;
+    if(activeTurn === 1){
+        if(isOpponent){
+            targetPlayer = "player2"
+        }else{
+            targetPlayer = "player1";
+        }
+    }else{
+        if(isOpponent){
+            targetPlayer = "player1"
+        }else{
+            targetPlayer = "player2";
+        }
+    }
+
+    
+    // Reproducir sonido según el tipo de bala
+    setTimeout(()=>{
+        if (isLive) {
+            shootSound.play();
+        } else {
+            blankSound.play();
+        }
+    }, 500);
+
+    //hace la animación de a quien apunta
+    if(activeTurn === 1){
+        if(isOpponent){
+            shotgun.dataset.aim = "2";
+            if(isLive){
+                setTimeout(()=>{
+                    defib.play();
+                }, 500)
             }
-        }, 200);
+        }else{
+            shotgun.dataset.aim = "1";
+            if(isLive){
+                setTimeout(()=>{
+                    bloodImg.style.display = 'block'
+                    defib.play();
+                }, 500)
+                setTimeout(()=>{
+                    bloodImg.style.display = 'none'
+                }, 2000)
+            }
+        }
+    }else{
+        if(isOpponent){
+            shotgun.dataset.aim = "1";
+            if(isLive){
+                setTimeout(()=>{
+                    bloodImg.style.display = 'block'
+                    defib.play();
+                }, 500)
+                setTimeout(()=>{
+                    bloodImg.style.display = 'none'
+                }, 2000)
+            }            
+        }else{
+            shotgun.dataset.aim = "2";
+            if(isLive){
+                setTimeout(()=>{
+                    defib.play();
+                }, 500)
+            }            
+        }
+    }
 
     currentTimeout = setTimeout(() => {
-        setStatus(`¡Bala ${isLive ? "REAL" : "falsa"}! ${isLive ? "¡DAÑO!" : "¡SALVASTE!"}`);
+        if(isLive && activeTurn === 1 && !isOpponent) setStatus(`!VAYA SUICIDA!`);
+        if(isLive && activeTurn === 1 && isOpponent) setStatus(`¡ESO, BALA REAL!`);
+        if(!isLive && activeTurn === 1 && !isOpponent) setStatus(`¡QUE HUEVOS!`);
+        if(!isLive && activeTurn === 1 && isOpponent) setStatus(`¡BUUUU, MALA SUERTE!`);
+        
         if (isLive) {
             damage(targetPlayer, 1);
         }
-        
-        updateBulletDisplay();
         
         if (!gameActive) return;
         
@@ -127,18 +281,18 @@ function shoot(player) {
             currentTimeout = setTimeout(nextTurn, 1500);
         }
     }, 1000);
+    
+    if(chamber.length === 0){
+        reload();
+    }
 }
 
-// Recargar
-function reload() {
+// Turno del oponente
+function opponentTurn() {
     if (!gameActive) return;
     
-    clearCurrentTimeout();
-    generateChamber();
-    setStatus(`Recarga: ${liveShells} bala(s) real(es) y ${blankShells} falsa(s)`);
-    updateBulletDisplay();
-    shotgun.dataset.aim = "";
-    currentTimeout = setTimeout(nextTurn, 1500);
+    const shootAtPlayer = player2Health === 1 ? Math.random() < 0.4 : Math.random() < 0.7;
+    shoot(shootAtPlayer ? "opponent" : "self");
 }
 
 // Daño al jugador
@@ -147,45 +301,16 @@ function damage(player, amount) {
     
     if (player === "player1") player1Health -= amount;
     if (player === "player2") player2Health -= amount;
-    renderHealth();
-}
-
-// Mostrar salud
-function renderHealth() {
-    player1HealthElement.innerText = '⚡'.repeat(Math.max(0, player1Health));
-    player2HealthElement.innerText = '⚡'.repeat(Math.max(0, player2Health));
-
-    if (player1Health <= 0 || player2Health <= 0) {
-        gameActive = false;
-        clearCurrentTimeout();
-        
-        const winner = player1Health <= 0 ? "¡OPONENTE GANA!" : "¡TÚ GANAS!";
-        
-        shootOpponentBtn.classList.add('hidden');
-        shootSelfBtn.classList.add('hidden');
-        
-        setStatus(`${winner} <button id="reiniciar-btn" style="cursor: pointer;">JUGAR DE NUEVO</button>`);
-        
-        shotgun.dataset.aim = "";
-        
-        const restartBtn = document.getElementById('reiniciar-btn');
-        if (restartBtn) {
-            restartBtn.onclick = function() {
-                inicio.style.display = "none";
-                juego.style.display = "block";
-                startGame();
-            };
-        }
-    }
+    showHealth();
 }
 
 // Cambiar turno
 function nextTurn() {
     shotgun.dataset.aim = "";
-    turn = turn === 1 ? 2 : 1;
-    renderTurn();
+    activeTurn = activeTurn === 1 ? 2 : 1;
+    showTurn();
     
-    if (turn === 2 && gameActive) {
+    if (activeTurn === 2 && gameActive) {
         setStatus("Turno del oponente...");
         currentTimeout = setTimeout(opponentTurn, 1500);
     } else if (gameActive) {
@@ -193,40 +318,16 @@ function nextTurn() {
     }
 }
 
-// Mostrar turno actual
-function renderTurn() {
-    document.getElementById("player-1").classList.toggle("active", turn === 1);
-    document.getElementById("player-2").classList.toggle("active", turn === 2);
-    
-    shootOpponentBtn.classList.toggle("hidden", turn !== 1);
-    shootSelfBtn.classList.toggle("hidden", turn !== 1);
-}
-
-// Actualizar balas en UI
-function updateBulletDisplay() {
-    bulletDisplay.innerHTML = "";
-    chamber.forEach(shell => {
-        const bullet = document.createElement("div");
-        bullet.className = `bullet ${shell}`;
-        bulletDisplay.appendChild(bullet);
-    });
-}
-
 // Mensajes de estado
 function setStatus(message) {
     statusElement.innerHTML = message;
 }
 
-startGame();
 
-shootOpponentBtn.addEventListener("click", function() {
-    if (turn === 1 && gameActive) {
-        shoot("opponent");
+// Función para limpiar el timeout actual
+function clearCurrentTimeout() {
+    if (currentTimeout) {
+        clearTimeout(currentTimeout);
+        currentTimeout = null;
     }
-});
-
-shootSelfBtn.addEventListener("click", function() {
-    if (turn === 1 && gameActive) {
-        shoot("self");
-    }
-});
+}
