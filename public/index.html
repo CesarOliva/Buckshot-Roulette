@@ -26,7 +26,6 @@
                 <button type="submit" id="registro">REGISTRARSE</button>
             </div>
         </form>
-
     </div>
 
     <!--Div del juego-->
@@ -34,9 +33,10 @@
         <!--Parte de la escopeta y la elección de a quien tirar-->
         <div id="game" class="gunMain">
             <div id="status"></div>
-
+            
+            <img src="images/Enemigo1.gif" alt="" class="enemigo" id="enemigo">
             <div id="shotgun-wrapper">
-                <button class="action-button shoot-button" id="shoot-opponent">OPONENTE</button>
+                <button class="action-button shoot-button" id="shoot-opponent"></button>
                 <img id="shotgun" src="images/shotgun.png" alt="Escopeta">
                 <button class="action-button shoot-button" id="shoot-self">USUARIO</button>
             </div>
@@ -49,6 +49,7 @@
             <div id="bullet_display" class="balas"></div>
         </div>
 
+        <!--Items de los jugadores-->
         <div class="items-container">
             <div id = "player-items">
                 <h3>Tus Items</h3>
@@ -62,10 +63,16 @@
             </div>
         </div>
     </div>
+
+    <div class="alerts" id="alertContainer">
+        <div class="container">
+            <h4 id="alerts">Error al ingresar el usuario</h4>
+        </div>
+    </div>
+
+    <!--Recursos extras-->
     <img id="blood" src="images/blood-removebg-preview.png" alt="">
-
     <audio loop id="audio" src="sounds/FormNoise.ogg" type="audio/mpeg"></audio>
-
     <script src="game.js"></script>
     <script src="form.js"></script>
 </body>

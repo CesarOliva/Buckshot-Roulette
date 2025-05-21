@@ -358,6 +358,10 @@ function nextTurn() {
                     setStatus(`OPONENTE USÓ ${key}`);
                     //se elimina solo un item (el que usa)
                     player2Items.splice(index, 1);
+                    if(key == "beer") beerSound.play();
+                    if(key == "knife") handsawSound.play();
+                    if(key == "cigarette") cigaretteSound.play();
+                    if(key == "lens") lensSound.play();
                     showItems();
                 }
             }

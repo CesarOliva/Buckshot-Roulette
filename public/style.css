@@ -88,7 +88,24 @@ body{
     background: rgba(255, 255, 255, 0.1);
 }
 
-
+.alerts{
+    background: #50383870;
+    position: absolute;
+    top: 10%;
+    display: none;
+}
+.alerts .container{
+    width: fit-content;
+    padding-inline: 2rem;
+    height: 40px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.alerts .container h4{
+    font-size: 20px;
+}
 
 /*Estilos del juego*/
 .juego .gunMain {
@@ -112,10 +129,18 @@ body{
 .juego .gunMain .action-button:hover {
     scale: 1.1;
 }
+.juego .gunMain .action-button#shoot-opponent{
+    position: relative;
+    top: 10%;
+    padding-bottom: 250px;
+}
+.juego .gunMain .action-button#shoot-self{
+    position: absolute;
+    top: 130%;
+}
 .juego .gunMain #shotgun-wrapper {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
     gap: 1rem;
     cursor: pointer;
@@ -123,6 +148,8 @@ body{
     position: relative;
 }
 #shotgun {
+    position: absolute;
+    top: 100%;
     rotate: -15deg;
     transition: scale .2s, rotate .4s;
     width: 256px;
@@ -179,8 +206,8 @@ body{
     display: flex;
     flex-direction: row;
     justify-content: center;
-    gap: 0.5rem;
-    margin-top: 2rem;
+    gap: .5rem;
+    margin-top: 160px;
     z-index: 999;
     border-radius: 5px;
 }
@@ -238,12 +265,12 @@ body{
 
 .items-container #player-items{
     position: absolute;
-    top: 400px;
+    top: 420px;
     left: 200px
 }
 .items-container #bot-items{
     position: absolute;
-    top: 400px;
+    top: 420px;
     right: 200px
 }
 .items-container #player-items,
@@ -257,11 +284,18 @@ body{
 .items-container #bot-items img:hover{
     transform: scale(1.2)
 }
-
 .items-container img{
     background: #ffffff40;
     height: 70px;
     width: 60px;
     padding: 10px;
     margin: 5px;
+}
+
+img.enemigo{
+    z-index: -100;
+    width: 400px;
+    position: absolute;
+    top: 20%;
+    right: calc(50% - 200px);
 }

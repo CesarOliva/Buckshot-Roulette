@@ -9,7 +9,8 @@ const inputContraseña = document.getElementById("password");
 const btnJugar = document.getElementById('jugar');
 const btnRegistro = document.getElementById('registro');
 
-
+const alerts = document.getElementById('alerts');
+const alertContainer = document.getElementById('alertContainer')
 
 //Al clickear en el elemento de registro
 btnRegistro.addEventListener('click', function(e){
@@ -61,7 +62,11 @@ async function enviarRegistro(){
     
     //Obtiene el mensaje de exito o error
     const data = await res.json();
-    alert(data.mensaje);
+    alerts.innerHTML = `${data.mensaje}`;
+    alertContainer.style.display = "block";
+    setTimeout(()=>{
+        alertContainer.style.display = "none";
+    }, 5000)
 }
 
 
@@ -116,7 +121,11 @@ async function enviarLogIn() {
     
     //Obtiene el mensaje de exito o error
     const data = await res.json();
-    alert(data.mensaje);
+    alerts.innerHTML = `${data.mensaje}`;
+    alertContainer.style.display = 'block';
+    setTimeout(()=>{
+        alertContainer.style.display = 'none';
+    }, 5000)
     
     if(data.mensaje == "Inicio de Sesión exitoso"){
         //Elimina los elementos de inicio de sesión y agrega los del juego
