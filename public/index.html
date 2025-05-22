@@ -30,11 +30,33 @@
 
     <!--Div del juego-->
     <div class="juego" id="juego" style="display: none;">
+        <div class="table">
+            <div class="header">
+                <h4>Winrate</h4>
+            </div>
+            <div class="body">
+                <div class="nombres">
+                    <h4>Enemigo:</h4>
+                    <h5 class="Dealer">El Dealer</h5>
+                    <h5 class="Psicopata">El Psicopata</h5>
+                    <h5 class="Tramposo">El Tramposo</h5>
+                    <h5 class="Resurector">El Resurector</h5>
+                </div>
+                <div class="winrate">
+                    <h4>Winrate:</h4>
+                    <h5 class="Dealer">50%</h5>
+                    <h5 class="Psicopata">50%</h5>
+                    <h5 class="Tramposo">50%</h5>
+                    <h5 class="Resurector">50%</h5>
+                </div>
+            </div>
+        </div>
+
         <!--Parte de la escopeta y la elección de a quien tirar-->
         <div id="game" class="gunMain">
             <div id="status"></div>
             
-            <img src="images/Enemigo1.gif" alt="" class="enemigo" id="enemigo">
+            <img src="" alt="" class="enemigo" id="enemigo">
             <div id="shotgun-wrapper">
                 <button class="action-button shoot-button" id="shoot-opponent"></button>
                 <img id="shotgun" src="images/shotgun.png" alt="Escopeta">
@@ -71,7 +93,7 @@
     </div>
 
     <!--Recursos extras-->
-    <img id="blood" src="images/blood-removebg-preview.png" alt="">
+    <img id="blood" src="images/blood.png" alt="">
     <audio loop id="audio" src="sounds/FormNoise.ogg" type="audio/mpeg"></audio>
     <script src="game.js"></script>
     <script src="form.js"></script>

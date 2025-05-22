@@ -1,5 +1,5 @@
 /*Variables globales*/
-var shootSound, blankSound, reloadSound, defib, cigaretteSound, beerSound, lensSound, handsawSound;
+var shootSound, blankSound, reloadSound, defib, cigaretteSound, beerSound, lensSound, handsawSound, laughSound;
 var gameActive = false;
 var activeTurn;
 var liveBullet, blanckBullet;
@@ -8,6 +8,9 @@ var chamber;
 var player1 = {hasKnife: false}, player2 = {hasKnife: false};
 var player1Items = [];
 var player2Items = [];
+var enemyCharacter = "EL DEALER"; // Por defecto
+var resurrectionUsed; // Para el Resurrector
+var bulletAdded;
 
 //Elementos del DOM
 const audio = document.getElementById("audio");
@@ -21,7 +24,17 @@ const shotgun = document.getElementById("shotgun");
 const bloodImg = document.getElementById("blood");
 const container = document.getElementById("items-list-player");
 const botcontainer = document.getElementById("items-list-bot");
+const imgEnemigo = document.getElementById('enemigo'); 
+const tablaDealer = document.getElementsByClassName('Dealer');
+const tablaPsicopata = document.getElementsByClassName('Psicopata');
+const tablaTramposo = document.getElementsByClassName('Tramposo');
+const tablaResurector = document.getElementsByClassName('Resurector');
 let currentTimeout = null;
+
+//Declara los enemigos 
+const enemyTypes = ["EL DEALER", "EL TRAMPOSO", "EL RESURECTOR", "EL PSICOPATA"];
+
+
 
 // Inicialización del juego
 function startGame() {
@@ -42,6 +55,7 @@ function startGame() {
     beerSound = new Audio('sounds/beer.ogg');
     cigaretteSound = new Audio('sounds/cigarrette.ogg');
     lensSound = new Audio('sounds/magnifier.ogg');
+    laughSound = new Audio('sounds/evil_laugh.ogg');
 
     //Genera las balas aleatoriamente.
     generateChamber();    
@@ -50,23 +64,82 @@ function startGame() {
         reloadSound.play(); //Hace el sonido de recarga
     }, 500);
 
-    //Indica de quien es el turno y la vida que tiene cada personaje
-    showTurn();
-    showHealth();
+    //Seleccion del tipo de enemigo
+    enemyCharacter = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+    
+    //Restablece las clases de los elementos de la tabla de winrate
+    for(i=0; i<2;i++){
+        tablaDealer[i].setAttribute('class', 'Dealer');
+    }
+    for(i=0; i<2;i++){
+        tablaPsicopata[i].setAttribute('class', 'Psicopata');
+    }
+    for(i=0; i<2;i++){
+        tablaTramposo[i].setAttribute('class', 'Tramposo');
+    }
+    for(i=0; i<2;i++){
+        tablaResurector[i].setAttribute('class', 'Resurector');
+    }
+
+
+    //Muestra la imagen segun el enemigo
+    switch(enemyCharacter){
+        case "EL DEALER":
+            imgEnemigo.setAttribute('src', 'images/Dealer.gif');
+            imgEnemigo.setAttribute('class', 'enemigo dealer');
+            for(i=0; i<2;i++){
+                tablaDealer[i].setAttribute('class', 'Dealer active');
+            }
+            break;
+        case "EL TRAMPOSO": 
+            imgEnemigo.setAttribute('src', 'images/Tramposo.gif');
+            imgEnemigo.setAttribute('class', 'enemigo');
+            for(i=0; i<2;i++){
+                tablaTramposo[i].setAttribute('class', 'Tramposo active')
+            }
+            break;
+        case "EL PSICOPATA":
+            imgEnemigo.setAttribute('src', 'images/Psicopata.gif');
+            imgEnemigo.setAttribute('class', 'enemigo dealer');
+            for(i=0; i<2;i++){
+                tablaPsicopata[i].setAttribute('class', 'Psicopata active')
+            }
+            break;
+        case "EL RESURECTOR":
+            imgEnemigo.setAttribute('src', 'images/Resurector.gif');
+            imgEnemigo.setAttribute('class', 'enemigo');
+            for(i=0; i<2;i++){
+                tablaResurector[i].setAttribute('class', 'Resurector active')
+            }
+            break;            
+        default:
+            imgEnemigo.setAttribute('src', 'images/Dealer.gif');
+            imgEnemigo.setAttribute('class', 'enemigo dealer');
+            for(i=0; i<2;i++){
+                tablaDealer[i].setAttribute('class', 'Dealer active');
+            }
+            break;
+    }
+    
+    resurrectionUsed = false; // Para el Resurrector
+    bulletAdded = false; // Para el tramposo
 
     player1Health = 3;
     player2Health = 3;
+
+    //Indica de quien es el turno y la vida que tiene cada personaje
+    showTurn();
+    showHealth();
 
     player1Items = randomItems();
     player2Items = randomItems();
 
     showItems(); 
 
-
     clearCurrentTimeout();
 
     //Establece el texto del estado
-    setStatus("EMPIEZA EL JUEGO - ¡DISPARA!");
+    setStatus("JUEGO CONTRA: "+enemyCharacter);
 }
 
 // Generar las balas del cartucho
@@ -277,7 +350,7 @@ function shoot(player) {
 
     currentTimeout = setTimeout(() => {
         if(isLive && activeTurn === 1 && !isOpponent) setStatus(`!VAYA SUICIDA!`);
-        if(isLive && activeTurn === 1 && isOpponent) setStatus(`¡ESO, BALA REAL!`);
+        if(isLive && activeTurn === 1 && isOpponent) setStatus(`¡DISPARASTE A ${enemyCharacter}!`);
         if(!isLive && activeTurn === 1 && !isOpponent) setStatus(`¡QUE HUEVOS!`);
         if(!isLive && activeTurn === 1 && isOpponent) setStatus(`¡BUUUU, MALA SUERTE!`);
         
@@ -294,19 +367,34 @@ function shoot(player) {
                 player2.hasKnife = false;
             }else if(isLive){
                 damage(targetPlayer, 1);
-            }            
+            }else if(player2.hasKnife){
+                player2.hasKnife = false;
+            }         
         }
         
         if (!gameActive) return;
         
-        if (isLive || isOpponent) {
+        // Bala real - turno normal
+        if (isLive) {
             if (chamber.length === 0) {
                 currentTimeout = setTimeout(reload, 1500);
             } else {
                 currentTimeout = setTimeout(nextTurn, 1500);
             }
-        } else if (!isOpponent) {
-            currentTimeout = setTimeout(nextTurn, 1500);
+        } else { // Bala falsa
+            if (!isOpponent) {
+                if (activeTurn === 1) {
+                    setStatus("¡BALA FALSA! DISPARA DE NUEVO");
+                    shotgun.dataset.aim = "";
+                }else {
+                    setStatus("¡"+enemyCharacter+" VUELVE A TIRAR!");
+                    currentTimeout = setTimeout(opponentTurn, 1500);
+                    shotgun.dataset.aim = "";
+                }
+            } else {
+                // Disparo a oponente con bala falsa - turno normal
+                currentTimeout = setTimeout(nextTurn, 1500);
+            }
         }
     }, 1000);
     
@@ -318,8 +406,60 @@ function shoot(player) {
 // Turno del oponente
 function opponentTurn() {
     if (!gameActive) return;
+
+    //Habilidad del Tramposo (añadir bala misteriosa)
+    if (enemyCharacter === "EL TRAMPOSO" && chamber.length > 0 && Math.random() < 0.3 && !bulletAdded){
+        bulletAdded = true;
+        var mysteryBullet = Math.random() < 0.5 ? "live" : "blank";
+        chamber.push(mysteryBullet);
+        setStatus("¡EL TRAMPOSO AÑADIÓ UNA BALA MISTERIOSA!");
+        // Sonido de recarga para indicar que añadió una bala
+        setTimeout(() => reloadSound.play(), 300);
+    }
     
-    const shootAtPlayer = player2Health === 1 ? Math.random() < 0.4 : Math.random() < 0.7;
+    //Habilidad del Psicópata (intentar robar ítem antes de disparar)
+    if (enemyCharacter === "EL PSICOPATA" && Math.random() < 0.2 && player1Items.length > 0) {
+        var stolenItemIndex = Math.floor(Math.random() * player1Items.length);
+        var stolenItem = player1Items[stolenItemIndex];
+        player1Items.splice(stolenItemIndex, 1);
+        player2Items.push(stolenItem);
+        setStatus(`¡EL PSICOPATA TE ROBÓ ${stolenItem}!`);
+        showItems();
+        // Pequeña pausa antes de continuar con el disparo
+        setTimeout(() => opponentTurn(), 1000);
+        return;
+    }
+
+    var shootAtPlayer;
+    switch(enemyCharacter) {
+        case "EL TRAMPOSO":
+            // Comportamiento arriesgado, prefiere disparar al jugador
+            shootAtPlayer = player2Health === 1 ? 
+                Math.random() < 0.4 :  // Si tiene poca vida, 40% de dispararse
+                Math.random() < 0.8;    // Sino, 80% de disparar al jugador
+            break;
+            
+        case "EL RESURECTOR":
+            // Comportamiento conservador, evita riesgos
+            shootAtPlayer = player2Health === 1 ? 
+                Math.random() < 0.7 :  // Si tiene poca vida, 70% de dispararse
+                (player1Health === 1 ? Math.random() < 0.9 : Math.random() < 0.5);
+            break;
+            
+        case "EL PSICOPATA":
+            // Comportamiento impredecible, a menudo se dispara a sí mismo
+            shootAtPlayer = player2Health === 1 ? 
+                Math.random() < 0.6 :  // Si tiene poca vida, 60% de dispararse
+                Math.random() < 0.3;   // Sino, solo 30% de disparar al jugador
+            break;
+            
+        default: // Enemigo normal
+            // Comportamiento original
+            shootAtPlayer = player2Health === 1 ? 
+                Math.random() < 0.4 : 
+                (player1Health === 1 ? Math.random() < 0.7 : Math.random() < 0.6);
+    }
+
     shoot(shootAtPlayer ? "opponent" : "self");
 }
 
@@ -329,6 +469,19 @@ function damage(player, amount) {
     
     if (player === "player1") player1Health -= amount;
     if (player === "player2") player2Health -= amount;
+
+      // Habilidad del Resurrector
+    if (enemyCharacter === "EL RESURECTOR" && player === "player2" && 
+        player2Health <= 0 && !resurrectionUsed) {
+        player2Health = 1; // Revive con 1 vida
+        resurrectionUsed = true; // Marca que ya usó su habilidad
+        setStatus("¡EL RESURECTOR HA REVIVIDO!");
+        defib.play();
+        laughSound.play();
+        // Pequeña pausa antes de mostrar el cambio de vida
+        setTimeout(() => showHealth(), 500);
+        return;
+    }   
     showHealth();
 }
 
@@ -339,59 +492,33 @@ function nextTurn() {
     showTurn();
     
     if (activeTurn === 2 && gameActive) {
-        setStatus("Turno del oponente...");
-        currentTimeout = setTimeout(opponentTurn, 1500);
-    } else if (gameActive) {
-        setStatus("Tu turno - ¡DISPARA!");
-    }
-    
-    if (activeTurn === 2){
-        setTimeout(() => {
-            if (player2Items.length > 0) {
-                // Intentar usar un ítem con 50% de probabilidad
-                if (Math.random() < 0.5) {
-                    const index = Math.floor(Math.random() * player2Items.length);
-                    const key = player2Items[index];
+        setStatus("TURNO DE "+enemyCharacter+"...");
         
-                    //items que usara el bot
-                    ITEMS[key].use('player2');
-                    setStatus(`OPONENTE USÓ ${key}`);
-                    //se elimina solo un item (el que usa)
-                    player2Items.splice(index, 1);
-                    if(key == "beer") beerSound.play();
-                    if(key == "knife") handsawSound.play();
-                    if(key == "cigarette") cigaretteSound.play();
-                    if(key == "lens") lensSound.play();
-                    showItems();
-                }
-            }
-            
-            //cuenta cuantas balas reales quedan en el cargador
-            const liveCount = chamber.filter(b => b === 'live').length;
-
-            //obtiene la cant. total de balas
-            const totalLeft = chamber.length;
-    
-            const probaLive = liveCount / totalLeft;
-    
-            let decision;
-            //el bot tiene 50% prob. de disparar o si el j1 tiene una vida, disparar al oponente
-            if (probaLive > 0.5 || player1Health === 1){
-                decision = 'opponent';
-            } else{
-                //el bot se dispara a si mismo
-                decision = 'self';
-            }
-    
-            shoot(decision);
-        }, 1000);
+         // Solo manejar el uso de ítems aquí
+        if (player2Items.length > 0 && Math.random() < 0.5) {
+            const index = Math.floor(Math.random() * player2Items.length);
+            const key = player2Items[index];
+            ITEMS[key].use('player2');
+            setStatus(`OPONENTE USÓ ${key}`);
+            player2Items.splice(index, 1);
+            if(key == "BEER") beerSound.play();
+            if(key == "KNIFE") handsawSound.play();
+            if(key == "CIGARETTE") cigaretteSound.play();
+            if(key == "LENS") lensSound.play();
+            showItems();
+            currentTimeout = setTimeout(opponentTurn, 1500);
+        } else {
+            currentTimeout = setTimeout(opponentTurn, 1000);
+        }
+    } else if (gameActive) {
+        setStatus("TU TURNO - ¡DISPARA!");
     }
 }
 
 // Declaracion de los items, nombre, descripcion, uso
 const ITEMS = {
-    cigarette : {
-        name : "cigarette",
+    CIGARETTE : {
+        name : "CIGARETTE",
         description: "Recupera 1 punto de vida",
         use : (player) => {
             // Si los jugadores tienen menos de 3 vidas, el cigarro repone una vida
@@ -402,8 +529,8 @@ const ITEMS = {
         }
     },
 
-    beer : {
-        name : "beer",
+    BEER : {
+        name : "BEER",
         description: "Reduce la cantidad de balas",
         use : (player) => {
             //Si el cargador tiene balas, se elimina la siguiente bala en disparar
@@ -413,8 +540,8 @@ const ITEMS = {
         } 
     },
 
-    lens : {
-        name : "lens",
+    LENS : {
+        name : "LENS",
         description: "Muestra la siguiente bala",
         use : (player) => {
             //Si el cargador tiene balas el jugador puede ver cual bala sigue
@@ -424,8 +551,8 @@ const ITEMS = {
         }
     },
 
-    knife : {
-        name : "knife",
+    KNIFE : {
+        name : "KNIFE",
         description: "Provoca doble daño",
         use : (player) => {
             //Unicamente cambia la var boolean, player has knife
@@ -484,10 +611,10 @@ function showItems(){
 function useItems(player, item, index){
     if(player === "player1"){
         switch(item){
-            case "cigarette":
+            case "CIGARETTE":
                 if(player1Health < 3){  //si tiene menos de 3 vidas
                     player1Health++;    //se añade una vida
-                    setStatus("Cigarro, +1 vida");
+                    setStatus("SE HA AÑADIDO UNA VIDA");
                     //llama a la funcion de salud
                     showHealth();
                 }else {
@@ -496,29 +623,29 @@ function useItems(player, item, index){
                 cigaretteSound.play();
                 break;
 
-            case "beer":
+            case "BEER":
                 //si hay balas en el cargador, se remueve una
                 if (chamber.length > 0) {
                     let removed = chamber.pop();
-                    setStatus(`Se descargó una bala : ${removed === 'live' ? 'Real' : 'Falsa'}`);
+                    setStatus(`SE DESCARGÓ UNA VALA ${removed === 'live' ? 'Real' : 'Falsa'}`);
                 } else {
                     //mensaje en caso de  que el cartucho este vacio
-                    setStatus("No hay balas para quitar");
+                    setStatus("NO HAY BALAS PARA QUITAR");
                 }
                 beerSound.play();
                 break;
 
-            case "lens":
+            case "LENS":
                 //mensaje que bala es la proxima en dispararse
-                setStatus("La siguiente bala es: "+(chamber[chamber.length - 1]==='live' ? 'Real' : 'Falsa'));
+                setStatus("LA SIGUIENTE BALA ES "+(chamber[chamber.length - 1]==='live' ? 'Real' : 'Falsa'));
                 lensSound.play();                
                 break;
                 
-            case "knife":
+            case "KNIFE":
                 //cambia la var player has knife
                 player1.hasKnife = true;
                 //mensaje sobre el daño que provocara
-                setStatus("El siguiente disparo hara el doble de daño");
+                setStatus("EL SIGUIENTE DISPARO HARÁ EL DOBLE DE DAÑO");
                 handsawSound.play();
                 break;    
             }
@@ -528,40 +655,38 @@ function useItems(player, item, index){
         showItems();
     }else{
         switch(item){
-            case "cigarette":
+            case "CIGARETTE":
                 if(player2Health < 3){  //si tiene menos de 3 vidas
                     player2Health++;    //se añade una vida
-                    setStatus("¡SE HA AUMENTADO UNA VIDA!");
+                    setStatus("¡"+enemyCharacter+" SE HA AUMENTADO UNA VIDA!");
                     //llama a la funcion de salud
                     showHealth();
                 } else {
-                    setStatus("?????????");
+                    setStatus("OKEY????");
                 }
                 break;
 
-            case "beer":
-                //si hay balas en el cargador, se remueve una
+            case "BEER":
                 if (chamber.length > 0) {
                     let removed = chamber.pop();
-                    setStatus(`Se descargó una bala : ${removed === 'live' ? 'Real' : 'Falsa'}`);
+                    setStatus(`SE DESCARGÓ UNA BALA ${removed === 'live' ? 'Real' : 'Falsa'}`);
                 } else {
                     //mensaje en caso de  que el cartucho este vacio
-                    setStatus("No hay balas para quitar");
+                    setStatus("NO HAY BALAS PARA QUITAR");
                 }
                 break;
 
-            case "lens":
+            case "LENS":
                 //mensaje que bala es la proxima en dispararse
-                setStatus("Interesante....");
-                //Agregar en funcion a que bala es
+                setStatus("INTERESANTE....");
                 break;
                 
-            case "knife":
+            case "KNIFE":
                 //cambia la var player has knife
                 player2.hasKnife = true;
 
                 //mensaje sobre el daño que provocara
-                setStatus("El siguiente disparo hara el doble de daño");
+                setStatus("EL SIGUIENTE DISPARO HARÁ EL DOBLE DE DAÑO");
                 break;                    
         }
         showItems();
