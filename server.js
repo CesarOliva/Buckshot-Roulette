@@ -28,6 +28,7 @@ db.connect((err)=>{
         console.log(err)
     }else{
         console.log('Base de datos conectada');
+        checkAndAlterTable(); // ← Aquí se ejecuta la verificación
     }
 });
 
@@ -46,9 +47,22 @@ CODIGO      SIGNIFICADO
 500         ERROR DEL SERVIDOR
 */
 
-app.get('/', (req, res) => {
-  res.status(200).json({ status: 'API funcionando' });
-});
+// Verificar y modificar la tabla al iniciar la aplicación
+const checkAndAlterTable = () => {
+  const alterTableQuery = `
+    ALTER TABLE users 
+    MODIFY COLUMN IdUser INT AUTO_INCREMENT PRIMARY KEY
+  `;
+
+      db.query(alterTableQuery, (alterErr) => {
+        if (alterErr) {
+          console.error("Error al modificar la tabla:", alterErr);
+        } else {
+          console.log("✔ Columna 'id' configurada como AUTO_INCREMENT");
+        }
+      });
+};
+
 
 //Ruta para recibir los datos del registro
 app.post('/api/register', (req, res)=>{
