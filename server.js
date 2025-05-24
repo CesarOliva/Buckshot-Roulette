@@ -28,7 +28,6 @@ db.connect((err)=>{
         console.log(err)
     }else{
         console.log('Base de datos conectada');
-        checkAndAlterTable(); // ← Aquí se ejecuta la verificación
     }
 });
 
@@ -46,20 +45,6 @@ CODIGO      SIGNIFICADO
 409         CONFLICTO (YA EXISTE)
 500         ERROR DEL SERVIDOR
 */
-
-// Verificar y modificar la tabla al iniciar la aplicación
-const checkAndAlterTable = () => {
-    db.query("ALTER TABLE users DROP PRIMARY KEY", (err) => {
-        if (err) throw err;
-        
-        // Luego establece IdUser como PK autoincremental
-        db.query(`ALTER TABLE users MODIFY COLUMN IdUser INT AUTO_INCREMENT PRIMARY KEY`, (alterErr) => {
-            if (alterErr) throw alterErr;
-            console.log("PK cambiada a IdUser exitosamente");
-        });
-    });
-};
-
 
 //Ruta para recibir los datos del registro
 app.post('/api/register', (req, res)=>{
