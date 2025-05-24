@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const mysql = require('mysql2');
 const cors = require('cors');
+require('dotenv').config();
 
 //Inicialización de los modulos
 const app = express();
