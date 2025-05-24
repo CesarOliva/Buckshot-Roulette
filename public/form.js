@@ -12,6 +12,10 @@ const btnRegistro = document.getElementById('registro');
 const alerts = document.getElementById('alerts');
 const alertContainer = document.getElementById('alertContainer')
 
+const BASE_URL = window.location.hostname.includes('localhost')
+  ? 'http://localhost:3000'
+  : 'https://mi-api-production.up.railway.app';
+
 //Al clickear en el elemento de registro
 btnRegistro.addEventListener('click', function(e){
     e.preventDefault();
@@ -54,7 +58,7 @@ async function enviarRegistro(){
     var contraseña = inputContraseña.value;
     
     //Envia los datos al post para la petición
-    const res = await fetch('http://localhost:3000/api/register', {
+    const res = await fetch(`${BASE_URL}/api/register`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({usuario, contraseña})
@@ -113,7 +117,7 @@ async function enviarLogIn() {
     var contraseña = inputContraseña.value;
 
     //Envia los datos al post para la petición
-    const res = await fetch('http://localhost:3000/api/login', {
+    const res = await fetch(`${BASE_URL}/api/login`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({usuario, contraseña})

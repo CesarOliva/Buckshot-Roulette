@@ -16,7 +16,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 //Credenciales de la base de datos
 const db = mysql.createConnection({
-    port: process.env.MYSQLPORT || 3000,    
+    port: process.env.MYSQLPORT || 3306,    
     host: process.env.MYSQLHOST || 'localhost',
     user: process.env.MYSQLUSER || 'root',
     password: process.env.MYSQLPASSWORD || '',
