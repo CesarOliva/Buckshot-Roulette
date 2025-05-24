@@ -13,7 +13,7 @@ const alerts = document.getElementById('alerts');
 const alertContainer = document.getElementById('alertContainer')
 
 const BASE_URL = window.location.hostname.includes('localhost')
-  ? 'http://localhost:3000'
+  ? 'http://localhost:3000/'
   : 'https://buckshot-roulette-web.up.railway.app/';
 
 //Al clickear en el elemento de registro

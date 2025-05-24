@@ -23,7 +23,6 @@ const db = mysql.createConnection({
     database: process.env.MYSQLDATABASE || 'buckshot_roulette',
 })
 
-
 //Conectar a la base de datos
 db.connect((err)=>{
     if(err){
@@ -95,5 +94,5 @@ app.post('/api/login', (req, res)=>{
 
 //Inicia el servidor
 app.listen(PORT, ()=>{
-    console.log('Servidor activo');
+    console.log('Servidor activo en el puerto: '+PORT);
 });
