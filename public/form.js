@@ -14,7 +14,7 @@ const alertContainer = document.getElementById('alertContainer')
 
 const BASE_URL = window.location.hostname.includes('localhost')
   ? 'http://localhost:3000'
-  : 'https://mi-api-production.up.railway.app';
+  : 'https://buckshot-roulette-web.up.railway.app/';
 
 //Al clickear en el elemento de registro
 btnRegistro.addEventListener('click', function(e){
