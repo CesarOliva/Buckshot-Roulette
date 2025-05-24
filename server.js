@@ -49,15 +49,15 @@ CODIGO      SIGNIFICADO
 
 // Verificar y modificar la tabla al iniciar la aplicación
 const checkAndAlterTable = () => {
-  const alterTableQuery = `ALTER TABLE users MODIFY COLUMN IdUser INT AUTO_INCREMENT PRIMARY KEY`;
-
-      db.query(alterTableQuery, (alterErr) => {
-        if (alterErr) {
-          console.error("Error al modificar la tabla:", alterErr);
-        } else {
-          console.log("✔ Columna 'id' configurada como AUTO_INCREMENT");
-        }
-      });
+    db.query("ALTER TABLE users DROP PRIMARY KEY", (err) => {
+        if (err) throw err;
+        
+        // Luego establece IdUser como PK autoincremental
+        db.query(`ALTER TABLE users MODIFY COLUMN IdUser INT AUTO_INCREMENT PRIMARY KEY`, (alterErr) => {
+            if (alterErr) throw alterErr;
+            console.log("PK cambiada a IdUser exitosamente");
+        });
+    });
 };
 
 
