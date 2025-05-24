@@ -14,7 +14,6 @@ const PORT = process.env.PORT || 3000;
 // Servir archivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
-
 //Credenciales de la base de datos
 const db = mysql.createConnection({
     port: process.env.MYSQLPORT || 3306,    
