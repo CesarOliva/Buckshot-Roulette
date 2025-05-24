@@ -92,7 +92,7 @@ body{
 .alerts{
     background: #50383870;
     position: absolute;
-    top: 10%;
+    top: 2%;
     display: none;
 }
 .alerts .container{

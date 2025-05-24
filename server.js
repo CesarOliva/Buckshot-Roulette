@@ -8,6 +8,7 @@ const cors = require('cors');
 const app = express();
 app.use(cors());
 app.use(express.json());
+const PORT = process.env.PORT || 3000;
 
 // Servir archivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
@@ -92,6 +93,6 @@ app.post('/api/login', (req, res)=>{
 });
 
 //Inicia el servidor
-app.listen(3000, ()=>{
+app.listen(PORT, ()=>{
     console.log('Servidor activo');
 });
