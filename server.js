@@ -16,10 +16,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 //Credenciales de la base de datos
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'buckshot_roulette'
+    port: process.env.MYSQLPORT || 3000,    
+    host: process.env.MYSQLHOST || 'localhost',
+    user: process.env.MYSQLUSER || 'root',
+    password: process.env.MYSQLPASSWORD || '',
+    database: process.env.MYSQLDATABASE || 'buckshot_roulette',
 })
 
 
@@ -52,14 +53,14 @@ app.post('/api/register', (req, res)=>{
     const { usuario, contraseña } = req.body;
 
     //Verifica que no exista ya el usuario
-    db.query("select * from usuarios where Usuario=?", usuario, (error, results)=>{
+    db.query("select * from users where User=?", usuario, (error, results)=>{
         if(error){
             return res.status(500).json({mensaje: 'Error al registrar el usuario'})
         };
 
         //Si no hay resultados coincidentes
         if(results.length === 0){
-            const insertarUsuario = "insert into usuarios (Usuario, Contraseña) values (?,?)"
+            const insertarUsuario = "insert into users (User, Password) values (?,?)"
             db.query(insertarUsuario, [usuario, contraseña], (error, resultado)=>{
                 if(error){
                     return res.status(500).json({mensaje: 'Error al registrar el usuario'})
@@ -78,7 +79,7 @@ app.post('/api/login', (req, res)=>{
     const { usuario, contraseña } = req.body;
 
     //Verifica que coincidan los datos de usuario y contraseña
-    db.query("select * from usuarios where Usuario=? and Contraseña = ?", [usuario, contraseña], (error, resultado)=>{
+    db.query("select * from users where User=? and Password = ?", [usuario, contraseña], (error, resultado)=>{
         if(error){
             console.log(error);
             return res.status(500).json({mensaje: 'Error al iniciar sesión'})
