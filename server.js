@@ -47,6 +47,10 @@ CODIGO      SIGNIFICADO
 500         ERROR DEL SERVIDOR
 */
 
+app.get('/', (req, res) => {
+  res.status(200).json({ status: 'API funcionando' });
+});
+
 //Ruta para recibir los datos del registro
 app.post('/api/register', (req, res)=>{
     const { usuario, contraseña } = req.body;
