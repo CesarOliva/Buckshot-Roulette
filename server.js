@@ -49,9 +49,7 @@ CODIGO      SIGNIFICADO
 
 // Verificar y modificar la tabla al iniciar la aplicación
 const checkAndAlterTable = () => {
-  const alterTableQuery = `
-    ALTER TABLE users MODIFY COLUMN IdUser INT AUTO_INCREMENT PRIMARY KEY
-  `;
+  const alterTableQuery = `ALTER TABLE users MODIFY COLUMN IdUser INT AUTO_INCREMENT PRIMARY KEY`;
 
       db.query(alterTableQuery, (alterErr) => {
         if (alterErr) {
