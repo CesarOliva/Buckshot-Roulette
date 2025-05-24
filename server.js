@@ -52,7 +52,7 @@ app.post('/api/register', (req, res)=>{
     const { usuario, contraseña } = req.body;
 
     //Verifica que no exista ya el usuario
-    db.query("select * from users where User=?", usuario, (error, results)=>{
+    db.query("select * from users where User=?", [usuario], (error, results)=>{
         if(error){
             return res.status(500).json({mensaje: 'Error al registrar el usuario'})
         };
