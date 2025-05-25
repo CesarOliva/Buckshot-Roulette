@@ -131,10 +131,11 @@ async function enviarLogIn() {
         alertContainer.style.display = 'none';
     }, 5000)
     
-    if(data.mensaje == "Inicio de Sesión exitoso"){
+    if(data.mensaje == "Inicio de sesión exitoso"){
         //Elimina los elementos de inicio de sesión y agrega los del juego
         cambiarVista();
     }
+    console.log(data.mensaje)
 }
 
 //Cambia la vista del formulario al juego
