@@ -124,15 +124,14 @@ function startGame() {
     resurrectionUsed = false; // Para el Resurrector
     bulletAdded = false; // Para el tramposo
 
-    player1Health = 3;
-    player2Health = 3;
-
     //Indica de quien es el turno y la vida que tiene cada personaje
     showTurn();
     showHealth();
 
     player1Items = randomItems();
     player2Items = randomItems();
+
+    player1 = {hasKnife: false}, player2 = {hasKnife: false};
 
     showItems(); 
 
@@ -356,56 +355,62 @@ function shoot(player) {
         
         if(activeTurn === 1){
             if (isLive && player1.hasKnife) {
-                damage(targetPlayer, 2);
-                player1.hasKnife = false;
+                damage(targetPlayer, 2);       
             }else if(isLive){
                 damage(targetPlayer, 1);
             }
+            player1.hasKnife = false;
         }else{
             if (isLive && player2.hasKnife) {
                 damage(targetPlayer, 2);
-                player2.hasKnife = false;
             }else if(isLive){
                 damage(targetPlayer, 1);
-            }else if(player2.hasKnife){
-                player2.hasKnife = false;
-            }         
+            }
+            // Desactivar cuchillo después de cualquier disparo
+            player2.hasKnife = false;      
         }
         
         if (!gameActive) return;
-        
-        // Bala real - turno normal
-        if (isLive) {
-            if (chamber.length === 0) {
-                currentTimeout = setTimeout(reload, 1500);
-            } else {
-                currentTimeout = setTimeout(nextTurn, 1500);
-            }
-        } else { // Bala falsa
-            if (!isOpponent) {
-                if (activeTurn === 1) {
-                    setStatus("¡BALA FALSA! DISPARA DE NUEVO");
-                    shotgun.dataset.aim = "";
-                }else {
-                    setStatus("¡"+enemyCharacter+" VUELVE A TIRAR!");
-                    currentTimeout = setTimeout(opponentTurn, 1500);
-                    shotgun.dataset.aim = "";
+
+        // Verificar si el cartucho está vacío después de sacar la bala
+        if (chamber.length === 0) {
+            currentTimeout = setTimeout(reload, 1000); // Recarga automática después de 3 segundos
+        } else {
+            // Bala real - turno normal
+            if (isLive) {
+                if (chamber.length === 0) {
+                    currentTimeout = setTimeout(reload, 1500);
+                } else {
+                    currentTimeout = setTimeout(nextTurn, 1500);
                 }
-            } else {
-                // Disparo a oponente con bala falsa - turno normal
-                currentTimeout = setTimeout(nextTurn, 1500);
+            } else { // Bala falsa
+                if (!isOpponent) {
+                    if (activeTurn === 1) {
+                        setStatus("¡BALA FALSA! DISPARA DE NUEVO");
+                        shotgun.dataset.aim = "";
+                    }else {
+                        setStatus("¡"+enemyCharacter+" VUELVE A TIRAR!");
+                        currentTimeout = setTimeout(opponentTurn, 1500);
+                        shotgun.dataset.aim = "";
+                    }
+                } else {
+                    // Disparo a oponente con bala falsa - turno normal
+                    currentTimeout = setTimeout(nextTurn, 1500);
+                }
             }
         }
     }, 1000);
-    
-    if(chamber.length === 0){
-        reload();
-    }
 }
 
 // Turno del oponente
 function opponentTurn() {
     if (!gameActive) return;
+
+    // Si tiene cuchillo, debe disparar al jugador
+    if (player2.hasKnife) {
+        shoot("opponent");
+        return;
+    }
 
     //Habilidad del Tramposo (añadir bala misteriosa)
     if (enemyCharacter === "EL TRAMPOSO" && chamber.length > 0 && Math.random() < 0.3 && !bulletAdded){
@@ -415,6 +420,7 @@ function opponentTurn() {
         setStatus("¡EL TRAMPOSO AÑADIÓ UNA BALA MISTERIOSA!");
         // Sonido de recarga para indicar que añadió una bala
         setTimeout(() => reloadSound.play(), 300);
+        currentTimeout = setTimeout(opponentTurn, 1000);
     }
     
     //Habilidad del Psicópata (intentar robar ítem antes de disparar)
@@ -426,7 +432,7 @@ function opponentTurn() {
         setStatus(`¡EL PSICOPATA TE ROBÓ ${stolenItem}!`);
         showItems();
         // Pequeña pausa antes de continuar con el disparo
-        setTimeout(() => opponentTurn(), 1000);
+        currentTimeout = setTimeout(opponentTurn, 1000);
         return;
     }
 
@@ -479,7 +485,7 @@ function damage(player, amount) {
         defib.play();
         laughSound.play();
         // Pequeña pausa antes de mostrar el cambio de vida
-        setTimeout(() => showHealth(), 500);
+        setTimeout(() => showHealth(), 3000);
         return;
     }   
     showHealth();
@@ -618,7 +624,7 @@ function useItems(player, item, index){
                     //llama a la funcion de salud
                     showHealth();
                 }else {
-                    setStatus("?????????");
+                    setStatus("¡YA TIENES TODAS TUS VIDAS!");
                 }
                 cigaretteSound.play();
                 break;
@@ -627,7 +633,8 @@ function useItems(player, item, index){
                 //si hay balas en el cargador, se remueve una
                 if (chamber.length > 0) {
                     let removed = chamber.pop();
-                    setStatus(`SE DESCARGÓ UNA BALA ${removed === 'live' ? 'Real' : 'Falsa'}`);
+                    setStatus(`SE DESCARGÓ UNA VALA ${removed === 'live' ? 'Real' : 'Falsa'}`);
+                    showBulletDisplay();
                 } else {
                     //mensaje en caso de  que el cartucho este vacio
                     setStatus("NO HAY BALAS PARA QUITAR");
@@ -670,6 +677,7 @@ function useItems(player, item, index){
                 if (chamber.length > 0) {
                     let removed = chamber.pop();
                     setStatus(`SE DESCARGÓ UNA BALA ${removed === 'live' ? 'Real' : 'Falsa'}`);
+                    showBulletDisplay();
                 } else {
                     //mensaje en caso de  que el cartucho este vacio
                     setStatus("NO HAY BALAS PARA QUITAR");
