@@ -485,7 +485,7 @@ function damage(player, amount) {
         defib.play();
         laughSound.play();
         // Pequeña pausa antes de mostrar el cambio de vida
-        setTimeout(() => showHealth(), 3000);
+        setTimeout(() => showHealth(), 1000);
         return;
     }   
     showHealth();
