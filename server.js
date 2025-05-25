@@ -82,11 +82,6 @@ app.post('/api/login', async (req, res) => {
 
         const [users] = await pool.query("select * from users where User=? and Password = ?", [usuario, contraseña]);
 
-        if(resultado.length === 0){
-            return res.status(400).json({mensaje: 'Usuario o contraseña incorrectos'});
-        }else{
-            res.status(200).json({mensaje: 'Inicio de Sesión exitoso'});
-        }
         //Verificar si el usuario existe
         if (users.length === 0) {
             return res.status(400).json({mensaje: 'Usuario o contraseña incorrectos'});
