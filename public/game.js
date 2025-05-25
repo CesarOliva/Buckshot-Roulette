@@ -633,7 +633,7 @@ function useItems(player, item, index){
                 //si hay balas en el cargador, se remueve una
                 if (chamber.length > 0) {
                     let removed = chamber.pop();
-                    setStatus(`SE DESCARGÓ UNA VALA ${removed === 'live' ? 'Real' : 'Falsa'}`);
+                    setStatus(`SE DESCARGÓ UNA BALA ${removed === 'live' ? 'Real' : 'Falsa'}`);
                     showBulletDisplay();
                 } else {
                     //mensaje en caso de  que el cartucho este vacio
