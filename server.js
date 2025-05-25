@@ -1,7 +1,7 @@
 //Importacion de los modulos a utilizar
 const express = require('express');
 const path = require('path');
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise');
 const cors = require('cors');
 
 //Inicialización de los modulos
@@ -14,23 +14,27 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, 'public')));
 
 //Credenciales de la base de datos
-const db = mysql.createConnection({
-    port: process.env.MYSQLPORT || 3306,    
-    host: process.env.MYSQLHOST || 'localhost',
-    user: process.env.MYSQLUSER || 'root',
-    password: process.env.MYSQLPASSWORD || '',
-    database: process.env.MYSQLDATABASE || 'buckshot_roulette',
-})
-
-//Conectar a la base de datos
-db.connect((err)=>{
-    if(err){
-        console.log(err)
-    }else{
-        console.log('Base de datos conectada');
-    }
+const pool = mysql.createPool({
+  host: process.env.MYSQLHOST || 'localhost',
+  user: process.env.MYSQLUSER || 'root',
+  password: process.env.MYSQLPASSWORD || '',
+  database: process.env.MYSQLDATABASE || 'buckshot_roulette',
+  port: process.env.MYSQLPORT || 3306,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
+// Verificación de conexión
+pool.getConnection()
+  .then(conn => {
+    console.log('Conexión a DB establecida');
+    conn.release(); // Libera la conexión al pool
+  })
+  .catch(err => {
+    console.error('Error de conexión a DB:', err);
+  }
+);
 
 /*Peticiones a la base de datos*/
 
@@ -47,51 +51,67 @@ CODIGO      SIGNIFICADO
 */
 
 //Ruta para recibir los datos del registro
-app.post('/api/register', (req, res)=>{
+app.post('/api/register', async (req, res) => {
+  try {
     const { usuario, contraseña } = req.body;
+    
+    //Verificar usuario existente
+    const [users] = await pool.query("select * from users where User = ?", [usuario]);
 
-    //Verifica que no exista ya el usuario
-    db.query("select * from users where User=?", [usuario], (error, results)=>{
-        if(error){
-            return res.status(500).json({mensaje: 'Error al registrar el usuario'})
-        };
-
-        //Si no hay resultados coincidentes
-        if(results.length === 0){
-            const insertarUsuario = "insert into users (User, Password) values (?,?)"
-            db.query(insertarUsuario, [usuario, contraseña], (error, resultado)=>{
-                if(error){
-                    return res.status(500).json({mensaje: 'Error al registrar el usuario'})
-                }
-
-                res.status(201).json({mensaje: 'Usuario registrado exitosamente',id:resultado.insertId});
-            });
-        }else{
-            res.status(409).json({mensaje: 'Usuario ya existente. Intente con otro'});
-        }
-    });
+    if (users.length > 0) {
+      return res.status(409).json({ mensaje: 'Usuario ya existente' });
+    }else{
+        //Insertar nuevo usuario
+        const [result] = await pool.query(
+          "INSERT INTO users (User, Password) VALUES (?, ?)",
+          [usuario, contraseña]
+        );
+    
+        res.status(201).json({mensaje: 'Usuario registrado exitosamente', id: result.insertId});
+    }
+  } catch (err) {
+    console.error('Error en registro:', err);
+    res.status(500).json({ mensaje: 'Error interno del servidor' });
+  }
 });
 
 //Ruta para recibir los datos de logIn
-app.post('/api/login', (req, res)=>{
-    const { usuario, contraseña } = req.body;
+app.post('/api/login', async (req, res) => {
+    try {
+        const { usuario, contraseña } = req.body;
 
-    //Verifica que coincidan los datos de usuario y contraseña
-    db.query("select * from users where User=? and Password = ?", [usuario, contraseña], (error, resultado)=>{
-        if(error){
-            console.log(error);
-            return res.status(500).json({mensaje: 'Error al iniciar sesión'})
-        }
+        const [users] = await pool.query("select * from users where User=? and Password = ?", [usuario, contraseña]);
 
         if(resultado.length === 0){
             return res.status(400).json({mensaje: 'Usuario o contraseña incorrectos'});
         }else{
             res.status(200).json({mensaje: 'Inicio de Sesión exitoso'});
         }
-    })
+        //Verificar si el usuario existe
+        if (users.length === 0) {
+            return res.status(400).json({mensaje: 'Usuario o contraseña incorrectos'});
+        }else{
+            const user = users[0];
+            res.status(200).json({mensaje: 'Inicio de sesión exitoso', id: user.id});
+        }
+    } catch (error) {
+        console.error('Error en login:', error);
+        
+        if (error.code === 'PROTOCOL_CONNECTION_LOST') {
+            return res.status(503).json({ mensaje: 'Servicio no disponible, intenta nuevamente' });
+        }
+        res.status(500).json({ mensaje: 'Error interno del servidor' });
+    }
 });
 
 //Inicia el servidor
 app.listen(PORT, ()=>{
     console.log('Servidor activo en el puerto: '+PORT);
+});
+
+// Cierre al terminar la app
+process.on('SIGTERM', async () => {
+  console.log('Cerrando pool de MySQL...');
+  await pool.end();
+  process.exit(0);
 });
