@@ -311,7 +311,7 @@ function shoot(player) {
             if(isLive){
                 setTimeout(()=>{
                     defib.play();
-                }, 500)
+                }, 700)
             }
         }else{
             shotgun.dataset.aim = "1";
@@ -319,7 +319,7 @@ function shoot(player) {
                 setTimeout(()=>{
                     bloodImg.style.display = 'block'
                     defib.play();
-                }, 500)
+                }, 700)
                 setTimeout(()=>{
                     bloodImg.style.display = 'none'
                 }, 2000)
@@ -332,7 +332,7 @@ function shoot(player) {
                 setTimeout(()=>{
                     bloodImg.style.display = 'block'
                     defib.play();
-                }, 500)
+                }, 700)
                 setTimeout(()=>{
                     bloodImg.style.display = 'none'
                 }, 2000)
@@ -342,7 +342,7 @@ function shoot(player) {
             if(isLive){
                 setTimeout(()=>{
                     defib.play();
-                }, 500)
+                }, 700)
             }            
         }
     }
