@@ -43,40 +43,17 @@ body{
     color: white;
     margin: 20px 0;
 }
-.inicio form{
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
-}
-.inicio form input{
-    margin: 10px 0;
-    padding: 5px 10px;
-    border-radius: 5px;
-    border: none;
-    font-family: "IM Fell English SC";
-    font-weight: normal;
-    font-size: 18px;
-}
-.inicio form input:focus{
-    outline: none;
-    border: none;
-}
-.inicio form input.error{
-    color: red;
-}
-.inicio form input.error::placeholder{
-    color: red;
-}
-.inicio form .botones{
+
+.inicio .botones{
     display: flex;
     flex-direction: row;
     justify-content: center;
     margin-top: 10px;
 }
-.inicio form .botones button{
+.inicio button{
     padding: 5px 10px;
     font-family: "Doto", sans-serif;
-    font-size: 16px;
+    font-size: 28px;
     color: white;
     border: 1px dotted white;
     border-radius: 10px;
@@ -85,7 +62,7 @@ body{
     cursor: pointer;
     transition: all 0.3s;
 }
-.inicio form .botones button:hover {
+.inicio form button:hover {
     background: rgba(255, 255, 255, 0.1);
 }
 

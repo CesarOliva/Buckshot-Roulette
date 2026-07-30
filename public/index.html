@@ -10,24 +10,15 @@
     <script src="//unpkg.com/alpinejs" defer></script>
 </head>
 <body onclick="document.getElementById('audio').play()">
-    <!--Div del fomulario-->
     <div class="inicio" id="inicio">
         <h2 class="up">BUCKSHOT</h2>
         <h2 class="down">ROULETTE</h2>
         <h4>WEB VERSION</h4>
-        <!--Formulario que manda a la base de datos-->
-        <form id="formulario">
-            <input type="text" placeholder="Usuario" name="usuario" id="usuario">
-            <input type="password" name="password" id="password" placeholder="Contraseña">
-
-            <div class="botones">
-                <button type="button" id="jugar">JUGAR</button>
-                <button type="submit" id="registro">REGISTRARSE</button>
-            </div>
-        </form>
+        <div class="botones">
+            <button type="button" id="jugar">JUGAR</button>
+        </div>
     </div>
 
-    <!--Div del juego-->
     <div class="juego" id="juego" style="display: none;">
         <div class="table">
             <div class="header">
@@ -51,7 +42,6 @@
             </div>
         </div>
 
-        <!--Parte de la escopeta y la elección de a quien tirar-->
         <div id="game" class="gunMain">
             <div id="status"></div>
             
@@ -70,28 +60,18 @@
             <div id="bullet_display" class="balas"></div>
         </div>
 
-        <!--Items de los jugadores-->
         <div class="items-container">
-            <div id = "player-items">
+            <div id="player-items">
                 <h3>Tus Items</h3>
-                <div id = "items-list-player">
-                </div>
+                <div id="items-list-player"></div>
             </div>
-            <div id = "bot-items">
+            <div id="bot-items">
                 <h3>Bot Items</h3>
-                <div id = "items-list-bot">
-                </div>
+                <div id="items-list-bot"></div>
             </div>
         </div>
     </div>
 
-    <div class="alerts" id="alertContainer">
-        <div class="container">
-            <h4 id="alerts">Error al ingresar el usuario</h4>
-        </div>
-    </div>
-
-    <!--Recursos extras-->
     <img id="blood" src="images/blood.png" alt="">
     <audio loop id="audio" src="sounds/FormNoise.ogg" type="audio/mpeg"></audio>
     <script src="game.js"></script>
