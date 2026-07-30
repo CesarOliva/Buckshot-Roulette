@@ -4,6 +4,6 @@ const btnJugar = document.getElementById('jugar');
 
 btnJugar.addEventListener('click', () => {
   divInicio.style.display = 'none';
-  divJuego.style.display = 'block';
+  divJuego.style.display = 'flex';
   startGame();
 });

@@ -2,13 +2,15 @@
 *{
     padding: 0;
     margin: 0;
+    box-sizing: border-box;
 }
 body{
     background: url("images/background.png");
     background-color: rgb(81, 29, 29);
     background-repeat: no-repeat;
     background-size: cover;
-    height: 100vh;
+    background-position: center center;
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -86,6 +88,12 @@ body{
 }
 
 /*Estilos del juego*/
+.juego {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 .juego .gunMain {
     padding: 10px;
 }
@@ -131,6 +139,7 @@ body{
     rotate: -15deg;
     transition: scale .2s, rotate .4s;
     width: 256px;
+    z-index: 1000;
 }
 #shotgun[data-aim="1"] {
     rotate: 90deg;
@@ -147,6 +156,7 @@ body{
     display: flex;
     justify-content: center;
     align-items: center;
+    text-align: center;
     margin: 0 auto;
     margin-block: 1rem;
     border-radius: 6px;
@@ -271,48 +281,179 @@ body{
 }
 
 img.enemigo{
-    z-index: -100;
+    z-index: 2;
     width: 400px;
     position: absolute;
     top: 20%;
     right: calc(50% - 200px);
+    cursor: pointer;
+    pointer-events: auto;
 }
 img.enemigo.dealer{
     width: 250px;
     right: calc(50% - 125px);
 }
 
-.juego .table{
-    position: absolute;
-    left: 5%;
-    background: #00000080;
+@media (max-width: 900px) {
+    body {
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        align-items: flex-start;
+        justify-content: flex-start;
+        padding: 1rem;
+    }
+
+    .inicio {
+        width: min(100%, 360px);
+        margin: 2rem auto;
+        padding-inline: 0.5rem;
+    }
+
+    .inicio h2 {
+        font-size: clamp(2.8rem, 12vw, 4.2rem);
+    }
+
+    .inicio h4 {
+        font-size: clamp(1.6rem, 6vw, 2.4rem);
+        margin: 1rem 0 1.25rem;
+    }
+
+    .inicio .botones {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .inicio button {
+        width: 100%;
+        margin: 0;
+        font-size: 1.2rem;
+        padding: 0.8rem 1rem;
+    }
+
+    .juego {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        padding-bottom: 2rem;
+    }
+
+    .juego .gunMain {
+        position: relative;
+        width: min(100%, 520px);
+        padding: 0.75rem 0.5rem 1.25rem;
+    }
+
+    #status {
+        width: 100%;
+        min-height: 3.25rem;
+        padding-inline: 1rem;
+        font-size: 0.95rem;
+        line-height: 1.2;
+        display: flex;
+        justify-content: center;
+    }
+
+    .juego .gunMain #shotgun-wrapper {
+        height: auto;
+        gap: 0.75rem;
+        margin-top: 0.25rem;
+    }
+
+    .juego .gunMain .action-button#shoot-opponent,
+    .juego .gunMain .action-button#shoot-self {
+        position: static;
+        top: auto;
+        padding: 0.5rem 0.75rem;
+        font-size: 1.05rem;
+    }
+
+    #shotgun {
+        position: relative;
+        top: auto;
+        width: min(72vw, 220px);
+        transform-origin: center center;
+    }
+
+    .juego .vidas {
+        flex-direction: column;
+        gap: 0.4rem;
+        margin-top: 1rem;
+        width: 100%;
+        align-items: center;
+    }
+
+    .juego .vidas .player {
+        width: 100%;
+        max-width: 320px;
+        text-align: center;
+        font-size: 1rem;
+        padding: 0.55rem 0.75rem;
+    }
+
+    .juego .balas {
+        position: static;
+        right: auto;
+        top: auto;
+        order: 4;
+        width: 100%;
+        max-width: 520px;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin: 0.5rem auto 0;
+    }
+
+    .juego .balas .bullet {
+        width: 16px;
+        height: 30px;
+        margin: 0;
+    }
+
+    img.enemigo,
+    img.enemigo.dealer {
+        position: static;
+        display: block;
+        z-index: 2;
+        width: min(70vw, 240px);
+        margin: 0 auto 0.5rem;
+    }
+
+    .items-container {
+        position: static;
+        flex-direction: column;
+        gap: 1rem;
+        width: min(100%, 520px);
+        margin: 0 auto;
+    }
+
+    .items-container #player-items,
+    .items-container #bot-items {
+        position: static;
+        left: auto;
+        right: auto;
+        top: auto;
+        width: 100%;
+        margin: 0;
+    }
+
+    .items-container img {
+        width: 52px;
+        height: 60px;
+        padding: 8px;
+        margin: 4px;
+    }
+
 }
-.juego .table .header{
-    font-family: 'Doto', sans-serif;
-    font-size: 22px;
-    text-align: center;
-    border: 1px solid #ffffff60;
-    padding: 5px 10px;
-}
-.juego .table .body{
-    display: flex;
-    justify-content: center;
-    font-family: 'Doto', sans-serif;
-    font-size: 18px;
-}
-.juego .table .body .nombres,
-.juego .table .body .winrate{
-    border: 1px solid #ffffff60;
-}
-.juego .table .body .nombres h4,
-.winrate h4{
-    border-bottom: 1px solid #ffffff60;
-    padding: 5px;    
-}
-.juego .table .body .nombres h5,
-.winrate h5{
-    padding: 5px;
-}
-.juego .table .active{
-    background: #ffffff40;
+
+@media (max-width: 600px) {
+    .items-container h3 {
+        font-size: 1rem;
+    }
+
+    .alerts .container h4 {
+        font-size: 16px;
+    }
 }

@@ -25,10 +25,6 @@ const bloodImg = document.getElementById("blood");
 const container = document.getElementById("items-list-player");
 const botcontainer = document.getElementById("items-list-bot");
 const imgEnemigo = document.getElementById('enemigo'); 
-const tablaDealer = document.getElementsByClassName('Dealer');
-const tablaPsicopata = document.getElementsByClassName('Psicopata');
-const tablaTramposo = document.getElementsByClassName('Tramposo');
-const tablaResurector = document.getElementsByClassName('Resurector');
 let currentTimeout = null;
 
 //Declara los enemigos 
@@ -66,20 +62,6 @@ function startGame() {
 
     //Seleccion del tipo de enemigo
     enemyCharacter = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
-    
-    //Restablece las clases de los elementos de la tabla de winrate
-    for(i=0; i<2;i++){
-        tablaDealer[i].setAttribute('class', 'Dealer');
-    }
-    for(i=0; i<2;i++){
-        tablaPsicopata[i].setAttribute('class', 'Psicopata');
-    }
-    for(i=0; i<2;i++){
-        tablaTramposo[i].setAttribute('class', 'Tramposo');
-    }
-    for(i=0; i<2;i++){
-        tablaResurector[i].setAttribute('class', 'Resurector');
-    }
 
 
     //Muestra la imagen segun el enemigo
@@ -87,37 +69,22 @@ function startGame() {
         case "EL DEALER":
             imgEnemigo.setAttribute('src', 'images/Dealer.gif');
             imgEnemigo.setAttribute('class', 'enemigo dealer');
-            for(i=0; i<2;i++){
-                tablaDealer[i].setAttribute('class', 'Dealer active');
-            }
             break;
         case "EL TRAMPOSO": 
             imgEnemigo.setAttribute('src', 'images/Tramposo.gif');
             imgEnemigo.setAttribute('class', 'enemigo');
-            for(i=0; i<2;i++){
-                tablaTramposo[i].setAttribute('class', 'Tramposo active')
-            }
             break;
         case "EL PSICOPATA":
             imgEnemigo.setAttribute('src', 'images/Psicopata.gif');
             imgEnemigo.setAttribute('class', 'enemigo dealer');
-            for(i=0; i<2;i++){
-                tablaPsicopata[i].setAttribute('class', 'Psicopata active')
-            }
             break;
         case "EL RESURECTOR":
             imgEnemigo.setAttribute('src', 'images/Resurector.gif');
             imgEnemigo.setAttribute('class', 'enemigo');
-            for(i=0; i<2;i++){
-                tablaResurector[i].setAttribute('class', 'Resurector active')
-            }
             break;            
         default:
             imgEnemigo.setAttribute('src', 'images/Dealer.gif');
             imgEnemigo.setAttribute('class', 'enemigo dealer');
-            for(i=0; i<2;i++){
-                tablaDealer[i].setAttribute('class', 'Dealer active');
-            }
             break;
     }
     
@@ -255,17 +222,20 @@ function showHealth() {
 }
 
 //Botones de disparo
-shootOpponentBtn.addEventListener("click", function() {
+function shootOpponent() {
     if (activeTurn === 1 && gameActive) {
         shoot("opponent");
     }
-});
+}
 
 shootSelfBtn.addEventListener("click", function() {
     if (activeTurn === 1 && gameActive) {
         shoot("self");
     }
 });
+
+shootOpponentBtn.addEventListener("click", shootOpponent);
+imgEnemigo.addEventListener("click", shootOpponent);
 
 
 // Función de disparar
